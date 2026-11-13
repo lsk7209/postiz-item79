@@ -1,0 +1,1 @@
+Source changes and final proof remain in progress. New backup/export/offsite/monitor and web-release/policy modules are task-owned; existing channel customization is preserved. PROJECT_STATE points to this active harness. No app-source, provider credential, domain, or existing recovery artifact changed.

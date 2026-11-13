@@ -31,6 +31,9 @@ class DeploymentGuardTest(unittest.TestCase):
         old_image = 'ghcr.io/gitroomhq/postiz-app@sha256:' + 'b' * 64
         new_image = deploy.PREFIX + 'a' * 64
         revision = 'c' * 40
+        policy = deploy.support_module('item79_release_policy')
+        packet = {'revision': revision, 'sourcePolicy': policy.VERSION, 'dockerfileSha256': policy.DOCKERFILE_SHA256, 'changedPaths': ['ops/test.py']}
+        web = types.SimpleNamespace(release=Mock(side_effect=RuntimeError('web release failed') if fail_readiness or preview_failed else None))
         config = {'name': 'postiz-center', 'services': {'app': {
             'image': old_image, 'env_file': 'app.env', 'ports': ['127.0.0.1:34007:5000'],
             'command': ['sh', '-c', 'node /app/wait-temporal.cjs && nginx && pnpm run pm2'],
@@ -54,29 +57,25 @@ class DeploymentGuardTest(unittest.TestCase):
                 if command[1] == 'run':
                     return b'changed' if schema_changed else b'schema'
                 raise AssertionError(command)
-            with patch.object(deploy, 'ROOT', root), patch.object(deploy.shutil, 'disk_usage', return_value=types.SimpleNamespace(free=100 * 1024**3)), patch.dict(deploy.os.environ, {'ITEM79_ALLOW_DEPLOY': 'true', 'SSH_ORIGINAL_COMMAND': 'deploy ' + new_image}, clear=True), patch.dict('sys.modules', {'fcntl': fake_lock, 'yaml': fake_yaml}), patch.object(deploy.sys, 'stdin', io.StringIO(json.dumps({'revision': revision}))), patch.object(deploy.subprocess, 'check_output', side_effect=output), patch.object(deploy.subprocess, 'run') as run, patch.object(deploy, 'validate_preview', side_effect=RuntimeError('preview failed') if preview_failed else None) as preview, patch.object(deploy, 'backup_release') as backup, patch.object(deploy, 'readiness', side_effect=[RuntimeError('failed'), None] if fail_readiness else None) as ready:
+            with patch.object(deploy, 'ROOT', root), patch.object(deploy.shutil, 'disk_usage', return_value=types.SimpleNamespace(free=100 * 1024**3)), patch.dict(deploy.os.environ, {'ITEM79_ALLOW_DEPLOY': 'true', 'SSH_ORIGINAL_COMMAND': 'deploy ' + new_image}, clear=True), patch.dict('sys.modules', {'fcntl': fake_lock, 'yaml': fake_yaml}), patch.object(deploy.sys, 'stdin', io.StringIO(json.dumps(packet))), patch.object(deploy.subprocess, 'check_output', side_effect=output), patch.object(deploy.subprocess, 'run') as run, patch.object(deploy, 'support_module', side_effect=lambda name: policy if name == 'item79_release_policy' else web):
                 if schema_changed or fail_readiness or preview_failed:
                     with self.assertRaises(RuntimeError):
                         deploy.main()
                     self.assertEqual((root/'compose.yaml').read_bytes(), before)
                 else:
                     deploy.main()
-                    self.assertEqual(json.loads((root/'compose.yaml').read_text())['services']['app']['image'], new_image)
-                if schema_changed or preview_failed:
-                    if schema_changed:
-                        preview.assert_not_called()
-                    backup.assert_not_called()
-                    self.assertFalse(any('up' in call.args[0] for call in run.call_args_list))
+                self.assertEqual((root/'compose.yaml').read_bytes(), before)
+                self.assertFalse(any('up' in call.args[0] for call in run.call_args_list))
+                if schema_changed:
+                    web.release.assert_not_called()
                 else:
-                    backup.assert_called_once()
-                    ready.assert_any_call(unittest.mock.ANY, new_image)
-                    if fail_readiness:
-                        ready.assert_any_call(unittest.mock.ANY, old_image, customized=False)
+                    web.release.assert_called_once()
+                    self.assertEqual(web.release.call_args.args[:2], (new_image, revision))
 
-    def test_release_changes_only_image_after_backup(self):
+    def test_web_release_keeps_worker_compose_unchanged(self):
         self.release_case()
 
-    def test_failed_release_restores_exact_compose_and_checks_old_image(self):
+    def test_web_failure_cannot_recreate_worker(self):
         self.release_case(fail_readiness=True)
 
     def test_schema_change_cannot_replace_app(self):

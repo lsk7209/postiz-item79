@@ -1,4 +1,8 @@
-# Contabo automatic deployment verified — 2026-11-13
+# Operations hardening in progress — 2026-11-13
+
+User authorized regular encrypted offsite backup, outage/deploy-failure alerts and reduced release interruption. Current execution: `.goal-harness/operations-hardening-20261113/STATUS.md`; operations guide: `ops/ITEM79-OPERATIONS.md`. Daily03:15KST encrypted source backup, hourly OVH encrypted Restic pull/restore verification and weekly full repository check are active. First87file encrypted snapshot was restored/hash-verified; Postiz/Temporal/Redis also restored in isolated network-none containers with no publishing worker. This proves artifact recovery, not an atomic cross-service recovery point. Alert recipient/channel question is pending; no message has been sent or delivery claimed. Actual warm web-only switch plus injected-failure rollback passed while the original worker/container/PID remained unchanged. Final improved Actions release and UI/continuity proof are pending. Do not report all three follow-ups complete yet.
+
+# Prior Contabo automatic deployment verified — 2026-11-13
 
 Current canonical execution evidence: `.goal-harness/contabo-activation-20261113/STATUS.md` and `EVIDENCE.md`.
 DONE. https://postiz.item79.com/launches is running source commit `2c951cf3b67520ad449bb7d5a9d850518dbf3a89`, immutable image `ghcr.io/lsk7209/postiz-item79@sha256:2bad13fd750daa7b6c1a55f83f85955c47869ac46117cb9f0d7eb74407a95900`. Actual main-push workflow43357711188 checks/image/deploy all SUCCESS and Contabo deployment7756169546 SUCCESS. Both repository switches remain true; future main pushes use the restricted release path. See `.goal-harness/contabo-activation-20261113/verification.json` for exact runtime and artifact proof.

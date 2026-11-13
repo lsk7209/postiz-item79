@@ -18,6 +18,7 @@ import secrets
 import tarfile
 import urllib.request
 import urllib.error
+import importlib.util
 
 ROOT = Path('/opt/postiz-center-20261112')
 PREFIX = 'ghcr.io/lsk7209/postiz-item79@sha256:'
@@ -28,6 +29,15 @@ def image_argument(command):
     if not match:
         raise ValueError('Only an exact Item79 image digest is accepted')
     return match[1]
+
+
+def support_module(name):
+    path = Path(__file__).with_name(name + '.py')
+    require(not path.is_symlink(), 'Unexpected release support module')
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 def require(condition, message):
     if not condition:
@@ -195,6 +205,7 @@ def main():
     packet = json.loads(sys.stdin.read(16384))
     revision = packet.get('revision', '')
     require(re.fullmatch('[a-f0-9]{40}', revision) is not None, 'Exact source revision required')
+    support_module('item79_release_policy').validate(packet)
     with (ROOT / '.deploy.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         compose = ROOT / 'compose.yaml'
@@ -219,31 +230,10 @@ def main():
         old_schema = subprocess.check_output(['docker', 'exec', old_container, 'cat', SCHEMA])
         new_schema = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'cat', image, SCHEMA])
         require(old_schema == new_schema, 'Schema changes require separate migration review')
-        validate_preview(image, config, args)
-        config_hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ['app.env', '.env', 'wait-temporal.cjs']}
-        backup_release(args)
-        # Existing digest/compose preserved. Only the app image changes.
-        backup = ROOT / 'backups' / ('compose.pre-release-' + str(time.time_ns()) + '.yaml')
-        backup.write_bytes(before)
-        os.chmod(backup, 0o600)
-        app['image'] = image
-        pending = compose.with_suffix('.pending')
-        pending.write_text(yaml.safe_dump(config, sort_keys=False))
-        os.chmod(pending, 0o600)
-        os.replace(pending, compose)
-        try:
-            subprocess.run(args + ['config', '--quiet'], check=True)
-            subprocess.run(args + ['up', '-d', '--no-deps', 'app'], check=True)
-            readiness(args, image)
-            require(all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest for name, digest in config_hashes.items()), 'Protected app configuration changed')
-            print(json.dumps({'releasedImage': image, 'revision': revision, 'schemaUnchanged': True, 'protectedConfigUnchanged': True}))
-        except BaseException:
-            pending.write_bytes(before)
-            os.replace(pending, compose)
-            subprocess.run(args + ['up', '-d', '--no-deps', 'app'], check=True)
-            readiness(args, yaml.safe_load(before)['services']['app']['image'], customized=False)
-            print('Previous app image restored and readiness verified', file=sys.stderr)
-            raise
+        config_hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ['compose.yaml', 'app.env', '.env', 'wait-temporal.cjs']}
+        web = support_module('item79_web_release')
+        web.release(image, revision, args, validate_preview=lambda: validate_preview(image, config, args), backup_release=lambda: backup_release(args))
+        require(all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest for name, digest in config_hashes.items()), 'Retained worker configuration changed')
 
 if __name__ == '__main__':
     main()

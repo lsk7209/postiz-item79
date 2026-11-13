@@ -1,0 +1,6 @@
+- Existing Node channel/account tests and Python deployment guards.
+- New backup encrypted-export path guards, archive corruption/path/duplicate/symlink rejection, failure scratch cleanup, storage reserve enforcement and receipt integrity.
+- Real source age-encrypted snapshot, pinned SSH read-only export, OVH age authentication, encrypted Restic snapshot and restore/hash of every file; disposable network-none PostgreSQL restore.
+- Monitor outage thresholds/recovery/deploy-failure dedupe/pending delivery; actual recipient test only after recipient/config confirmation.
+- Source/Dockerfile/worker-contract policy and live Prisma diff, no worker in web slot, rollback journal/recovery and traffic-switch failures.
+- Actual push release with public revision polling and before/after worker container/PID/pollers/data/upload/config/other-service invariants; authenticated UI smoke.

@@ -1,0 +1,8 @@
+- ops/item79-backup.py: source snapshot, integrity check and age encryption.
+- ops/item79-backup-export.py: encrypted-only readonly forced SSH endpoint.
+- ops/item79-offsite.py: OVH transport, decrypt, encrypted Restic storage and restore verification.
+- ops/item79-monitor.py: external health/GitHub failure observer and configured private notification delivery.
+- ops/item79_release_policy.py: immutable worker/base source guard.
+- ops/item79_web_release.py: warm web slots and scoped traffic switch, retained worker identity.
+- ops/contabo-deploy.py, .github/workflows/item79.yml: integrate the supported release path.
+- .runtime/operations/: ignored private installation, SSH orchestration, restore scratch/proof and key-recovery handling. Never commit.

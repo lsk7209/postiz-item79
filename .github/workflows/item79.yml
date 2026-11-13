@@ -23,6 +23,10 @@ jobs:
         env:
           NODE_PATH: ${{ runner.temp }}/item79-tests/node_modules
       - run: python3 -m unittest discover -s tests -p "test_*.py"
+      - name: Enforce retained worker and base-image policy
+        run: |
+          git fetch --no-tags --depth=1 origin 2c951cf3b67520ad449bb7d5a9d850518dbf3a89
+          python3 ops/item79_release_policy.py --head "$GITHUB_SHA"
   image:
     needs: checks
     # Explicit repository switch controls image publication.
@@ -80,6 +84,8 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/item79
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           [[ "$IMAGE" =~ ^ghcr.io/lsk7209/postiz-item79@sha256:[a-f0-9]{64}$ ]]
-          python3 -c 'import json,os; print(json.dumps({"revision":os.environ["REVISION"],"registryUser":os.environ["REGISTRY_USER"],"registryToken":os.environ["REGISTRY_TOKEN"]}))' | \
+          git fetch --no-tags --depth=1 origin 2c951cf3b67520ad449bb7d5a9d850518dbf3a89
+          python3 ops/item79_release_policy.py --head "$REVISION" > "$RUNNER_TEMP/item79-policy.json"
+          python3 -c 'import json,os; p=json.load(open(os.path.join(os.environ["RUNNER_TEMP"],"item79-policy.json"))); p.update({"revision":os.environ["REVISION"],"registryUser":os.environ["REGISTRY_USER"],"registryToken":os.environ["REGISTRY_TOKEN"]}); print(json.dumps(p))' | \
           ssh -i ~/.ssh/item79 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             "$DEPLOY_USER@$DEPLOY_HOST" "deploy $IMAGE"

@@ -1,0 +1,5 @@
+- Cross-database consistency: Postiz and Temporal each have their own consistent pg_dump transaction; Redis is later. Restored payloads are never automatically started as publishers. Recovery must reconcile pending/outcome-unknown work against provider state before enabling workers. File hashes are not a whole-service coordinated checkpoint.
+- Storage: source ciphertext and offsite encrypted snapshots are preserved; source12GiB and offsite4GiB reserve checks protect other services. Monitoring must warn on capacity/freshness; no implicit pruning of old recovery backups.
+- Notifications: provider/recipient is currently missing and explicitly requested asynchronously. Never describe event persistence as message delivery.
+- Worker shutdown: installed Temporal core does not establish an awaited drain. The chosen design retains the original worker container, avoiding shutdown entirely for allowed web-only changes.
+- Compatibility: image fingerprint alone is insufficient; ordinary release policy also rejects worker/shared contract/schema/dependency/base source changes.

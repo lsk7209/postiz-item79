@@ -1,0 +1,6 @@
+- [x] Existing Contabo/repository/domain and owned independent backup destination verified.
+- [x] Scheduled encrypted offsite backup completes and isolated DB/files restore verifies source hashes.
+- [ ] Failure/recovery and failed-deploy alerts reach the configured intended user destination with secrets excluded.
+- [ ] Warm web traffic handover retains the original sole publishing-worker process and passes actual rollback/release tests. Actual failure/rollback rehearsal passed; successful Actions release pending.
+- [ ] Public interruption measured against previous147second readiness window; preserve original data/uploads/OAuth/queues/services.
+- [ ] Focused tests and independent scoped review pass; changes committed, pushed and deployed; exact runtime and state documented.
