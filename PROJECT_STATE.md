@@ -1,7 +1,7 @@
 # Contabo activation in progress — explicit user resume 2026-11-13
 
 Current canonical execution evidence: `.goal-harness/contabo-activation-20261113/STATUS.md` and `EVIDENCE.md`.
-User explicitly requested activating prepared Contabo automatic deployment and verifying the actual operating screen. Repository/host/project identity verified; original production app and data still preserved. Initial Docker image built successfully in run43354732929; private preview validation is in progress. Restricted SSH account and main-only GitHub environment configured. Production deployment remains disabled until preview and review pass. Do not report production completion yet.
+User explicitly requested activating prepared Contabo automatic deployment and verifying the actual operating screen. Repository/host/project identity verified. Actual cloned-DB preview and candidate-ready failure/rollback PASS; original upstream image is restored and ready, signup disabled. Restricted SSH account and main-only GitHub environment configured. Both automatic delivery switches enabled after recovery proof; this activation receipt push starts actual delivery. Public customized UI/persistence and final deployed revision verification remain pending. Original uploads, account/OAuth rows, configuration and unrelated container identities were preserved; concurrent external work added Post/Media38->45.
 
 # Historical stop snapshot — superseded by explicit resume above
 
