@@ -21,6 +21,10 @@ is hidden from the generic boolean settings editor. No DB schema change is requi
 ## Delivery state and activation
 
 **Activation authorized 2026-11-13; see PROJECT_STATE.md and the Contabo activation harness for verified current release evidence.**
+Actual automatic main-push run43357711188 completed all three jobs successfully;
+Contabo runs2c951cf3. Public authenticated desktop/mobile link and save/reload/clear
+checks passed. Both delivery variables remain enabled. The final documentation-only
+evidence commit skips CI to avoid a redundant app restart; runtime code is unchanged.
 CI runs deterministic metadata/link tests on push. Image build and production deploy
 are both disabled unless their explicit repository variables are enabled. No deploy
 key, registry credential or production environment file is committed.
@@ -55,6 +59,8 @@ readiness on failure. `main` pushes run checks, build/push an immutable image an
 when the two explicit repository switches are enabled. Releases are serialized.
 Image rollback is not a database rollback. Production authentication, video scheduling,
 volume continuity, and a full rollback drill must be verified on actual release.
+Those activation checks have now passed; future scheduled-post outcomes are separate
+from this release verification. The app is recreated during release (restart window).
 
 The deployment credential has no interactive shell, PTY, port forwarding or general
 Docker/sudo access. Its root-owned entry point accepts only

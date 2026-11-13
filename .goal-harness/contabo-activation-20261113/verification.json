@@ -1,0 +1,143 @@
+{
+  "verifiedAtUtc": "2026-11-13T03:35:30.582878+00:00",
+  "repository": "https://github.com/lsk7209/postiz-item79",
+  "publicUrl": "https://postiz.item79.com/launches",
+  "workflow": {
+    "url": "https://github.com/lsk7209/postiz-item79/actions/runs/43357711188",
+    "event": "push",
+    "headSha": "2c951cf3b67520ad449bb7d5a9d850518dbf3a89",
+    "conclusion": "success",
+    "jobs": {
+      "checks": "success",
+      "image": "success",
+      "deploy": "success"
+    }
+  },
+  "runtime": {
+    "timeUtc": "2026-11-13T03:35:25.790839+00:00",
+    "image": "ghcr.io/lsk7209/postiz-item79@sha256:2bad13fd750daa7b6c1a55f83f85955c47869ac46117cb9f0d7eb74407a95900",
+    "revision": "2c951cf3b67520ad449bb7d5a9d850518dbf3a89",
+    "onlyComposeImageChanged": true,
+    "configuredImageMatchesRunning": true,
+    "protectedConfigUnchanged": {
+      "app.env": true,
+      ".env": true,
+      "wait-temporal.cjs": true
+    },
+    "appPorts": {
+      "5000/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "34007"
+        }
+      ]
+    },
+    "memoryBytes": 4294967296,
+    "nanoCpus": 2000000000,
+    "networks": [
+      "imcloud-postiz-front",
+      "postiz-center_default"
+    ],
+    "temporalNetworks": [
+      "postiz-center_default"
+    ],
+    "previewContainersRemaining": [],
+    "temporaryRegistryConfigsRemaining": 0,
+    "entrypointSha256": "e0d763954417efb5911a75327f779e80af05f450e14cae31327f6923ee127241",
+    "rollbackFilesRetained": true,
+    "originalRecordContinuity": {
+      "User": {
+        "baseline": 1,
+        "current": 1,
+        "originalMissing": 0,
+        "originalChangedFields": [],
+        "additions": 0
+      },
+      "Organization": {
+        "baseline": 1,
+        "current": 1,
+        "originalMissing": 0,
+        "originalChangedFields": [],
+        "additions": 0
+      },
+      "Integration": {
+        "baseline": 2,
+        "current": 3,
+        "originalMissing": 0,
+        "originalChangedFields": [
+          [
+            "updatedAt"
+          ]
+        ],
+        "additions": 1
+      },
+      "Post": {
+        "baseline": 38,
+        "current": 45,
+        "originalMissing": 0,
+        "originalChangedFields": [],
+        "additions": 7
+      },
+      "Media": {
+        "baseline": 38,
+        "current": 45,
+        "originalMissing": 0,
+        "originalChangedFields": [],
+        "additions": 7
+      }
+    },
+    "latestBackup": {
+      "directory": "/opt/postiz-center-20261112/backups/release-1794540486628683507",
+      "databaseBytes": 241072,
+      "runtimeArchiveBytes": 143278080,
+      "runtimeArchiveSha256": "0bbba524da9c79297081d8d39130d6158d2fff75f6c198bd9b94a8dc4667839b"
+    }
+  },
+  "publicHttps": {
+    "/auth/login": {
+      "status": 200
+    },
+    "/api/auth/can-register": {
+      "status": 200,
+      "body": {
+        "register": false
+      }
+    },
+    "/api/public/v1/me": {
+      "status": 401
+    }
+  },
+  "data": {
+    "allOriginalUploadsUnchanged": true,
+    "unrelatedContainersChanged": []
+  },
+  "ui": {
+    "authenticatedCalendarObserved": true,
+    "exactYoutubeLinkOpenedNewTab": true,
+    "youtubeChannelTitleObserved": "숫자로 뒤집어 보는 세상 - YouTube",
+    "googleRecordSavedAndPersistedAfterReload": true,
+    "testRecordClearedAndReloadVerified": true,
+    "otherOriginalChannelRecordUnchanged": true,
+    "desktopActualImageInspected": true,
+    "mobile430ChannelDrawerActualImageInspected": true,
+    "normalViewportRestored": true,
+    "currentVisibleYoutubeChannelCount": 3,
+    "concurrentAccountAdditionPreserved": true,
+    "finalUiObservationUtc": "2026-11-13T03:38:06.144075+00:00"
+  },
+  "screenshots": {
+    "desktop.png": {
+      "path": ".runtime/activation/screenshots/desktop.png",
+      "sha256": "f3548e4812700943bef0db0c775be911704b1b8c7cd7020fa882fa7e41e6f935"
+    },
+    "mobile-channels-430.png": {
+      "path": ".runtime/activation/screenshots/mobile-channels-430.png",
+      "sha256": "8d976d8faab023075a21a9f62e0fe5e6b979cffe7d6da3d8fcaf0ff4751bed77"
+    }
+  },
+  "limitations": [
+    "App-only replacement has a restart window; no zero-downtime guarantee.",
+    "No new YouTube upload/publication or future scheduled-delivery outcome was tested.",
+    "Google account emails are manual operator records; no identity inference or seeding."
+  ]
+}
