@@ -99,7 +99,7 @@ def validate_preview(image, config, args):
     settings = {'name': project, 'services': {
         'preview-db': {'image': config['services']['database']['image'], 'environment': {'POSTGRES_USER': 'postiz', 'POSTGRES_DB': 'postiz', 'POSTGRES_PASSWORD': password}, 'mem_limit': '512m', 'cpus': 0.5, 'healthcheck': {'test': ['CMD-SHELL', 'pg_isready -U postiz -d postiz'], 'interval': '2s', 'timeout': '2s', 'retries': 45}},
         'preview-redis': {'image': config['services']['redis']['image'], 'mem_limit': '128m', 'cpus': 0.25},
-        'web': {'image': image, 'env_file': 'web.env', 'ports': ['127.0.0.1:34008:5000'], 'volumes': [str(ROOT / 'uploads') + ':/uploads:ro'], 'mem_limit': '4g', 'cpus': 2,
+        'web': {'image': image, 'env_file': 'web.env', 'volumes': [str(ROOT / 'uploads') + ':/uploads:ro'], 'mem_limit': '4g', 'cpus': 2,
                 'command': ['sh', '-c', 'nginx && pnpm --filter ./apps/frontend run pm2 && pnpm --filter ./apps/backend run pm2 && pm2 logs']},
     }, 'networks': {'default': {'internal': True}}}
     compose = preview / 'compose.yaml'
@@ -120,13 +120,20 @@ def validate_preview(image, config, args):
         with dump.open('rb') as inp:
             subprocess.run(pc + ['exec', '-T', 'preview-db', 'pg_restore', '-U', 'postiz', '-d', 'postiz', '--exit-on-error', '--no-owner', '--no-acl'], stdin=inp, stdout=subprocess.DEVNULL, check=True)
         subprocess.run(pc + ['up', '-d', '--no-deps', 'web'], check=True)
+        web = subprocess.check_output(pc + ['ps', '-q', 'web']).decode().strip()
+        info = json.loads(subprocess.check_output(['docker', 'inspect', web]))[0]
+        # Internal Docker networks do not publish host ports; the host can reach
+        # the private bridge address directly without granting container egress.
+        address = info['NetworkSettings']['Networks'][network]['IPAddress']
+        require(re.fullmatch(r'[0-9.]+', address) is not None, 'Missing private preview address')
+        preview_url = 'http://' + address + ':5000'
         for _ in range(90):
             try:
-                with urllib.request.urlopen('http://127.0.0.1:34008/auth/login', timeout=5) as response:
+                with urllib.request.urlopen(preview_url + '/auth/login', timeout=5) as response:
                     require(response.status == 200, 'Preview login unavailable')
-                with urllib.request.urlopen('http://127.0.0.1:34008/api/auth/can-register', timeout=5) as response:
+                with urllib.request.urlopen(preview_url + '/api/auth/can-register', timeout=5) as response:
                     require(json.load(response) == {'register': False}, 'Preview backend unavailable')
-                request = urllib.request.Request('http://127.0.0.1:34008/api/integrations/deploy-smoke/google-account-label', data=b'{}', headers={'Content-Type': 'application/json'}, method='POST')
+                request = urllib.request.Request(preview_url + '/api/integrations/deploy-smoke/google-account-label', data=b'{}', headers={'Content-Type': 'application/json'}, method='POST')
                 try:
                     urllib.request.urlopen(request, timeout=5)
                     raise RuntimeError('Preview endpoint allows anonymous edits')
