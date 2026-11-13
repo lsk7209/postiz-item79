@@ -62,6 +62,13 @@ Docker/sudo access. Its root-owned entry point accepts only
 the exact source `revision`, `registryUser` and short-lived `registryToken`. The workflow
 checks are required dependencies of release jobs. This workflow does not publish videos.
 
+Preview reuses the dedicated `item79-release-preview` Temporal namespace, with no workers
+and cron disabled. A fixed internal TCP7233 relay reaches Temporal without modifying its
+network attachments. Every preview uses unique disposable web/DB/Redis/relay containers;
+dump/config evidence remains private under the project. Release fails closed if cleanup
+is incomplete. Image pulls need at least12GiB free; recovery backup additionally reserves
+twice the runtime-file size plus12GiB. Every archived runtime file is read back and hashed.
+
 ## Source license
 
 This fork retains upstream AGPL-3.0 licensing. Corresponding customized source is

@@ -54,7 +54,7 @@ class DeploymentGuardTest(unittest.TestCase):
                 if command[1] == 'run':
                     return b'changed' if schema_changed else b'schema'
                 raise AssertionError(command)
-            with patch.object(deploy, 'ROOT', root), patch.dict(deploy.os.environ, {'ITEM79_ALLOW_DEPLOY': 'true', 'SSH_ORIGINAL_COMMAND': 'deploy ' + new_image}, clear=True), patch.dict('sys.modules', {'fcntl': fake_lock, 'yaml': fake_yaml}), patch.object(deploy.sys, 'stdin', io.StringIO(json.dumps({'revision': revision}))), patch.object(deploy.subprocess, 'check_output', side_effect=output), patch.object(deploy.subprocess, 'run') as run, patch.object(deploy, 'validate_preview', side_effect=RuntimeError('preview failed') if preview_failed else None) as preview, patch.object(deploy, 'backup_release') as backup, patch.object(deploy, 'readiness', side_effect=[RuntimeError('failed'), None] if fail_readiness else None) as ready:
+            with patch.object(deploy, 'ROOT', root), patch.object(deploy.shutil, 'disk_usage', return_value=types.SimpleNamespace(free=100 * 1024**3)), patch.dict(deploy.os.environ, {'ITEM79_ALLOW_DEPLOY': 'true', 'SSH_ORIGINAL_COMMAND': 'deploy ' + new_image}, clear=True), patch.dict('sys.modules', {'fcntl': fake_lock, 'yaml': fake_yaml}), patch.object(deploy.sys, 'stdin', io.StringIO(json.dumps({'revision': revision}))), patch.object(deploy.subprocess, 'check_output', side_effect=output), patch.object(deploy.subprocess, 'run') as run, patch.object(deploy, 'validate_preview', side_effect=RuntimeError('preview failed') if preview_failed else None) as preview, patch.object(deploy, 'backup_release') as backup, patch.object(deploy, 'readiness', side_effect=[RuntimeError('failed'), None] if fail_readiness else None) as ready:
                 if schema_changed or fail_readiness or preview_failed:
                     with self.assertRaises(RuntimeError):
                         deploy.main()
@@ -84,6 +84,31 @@ class DeploymentGuardTest(unittest.TestCase):
 
     def test_failed_preview_leaves_production_app_untouched(self):
         self.release_case(preview_failed=True)
+
+    def test_backup_rejects_low_disk_before_running_dump(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root/'uploads').mkdir(); (root/'app-config').mkdir()
+            with patch.object(deploy, 'ROOT', root), patch.object(deploy.shutil, 'disk_usage', return_value=types.SimpleNamespace(free=0)), patch.object(deploy.subprocess, 'run') as run:
+                with self.assertRaisesRegex(RuntimeError, 'Insufficient free space'):
+                    deploy.backup_release([])
+                run.assert_not_called()
+
+    def test_backup_archive_contains_original_upload_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ['uploads', 'app-config', 'backups']:
+                (root/name).mkdir()
+            original = b'original private upload bytes'
+            (root/'uploads'/'video.mp4').write_bytes(original)
+            for name in ['compose.yaml', 'app.env', '.env', 'wait-temporal.cjs']:
+                (root/name).write_text('protected')
+            def dump(command, stdout, **kwargs):
+                stdout.write(b'PGDMP' + b'x' * 1100)
+            with patch.object(deploy, 'ROOT', root), patch.object(deploy.shutil, 'disk_usage', return_value=types.SimpleNamespace(free=100 * 1024**3)), patch.object(deploy.subprocess, 'run', side_effect=dump):
+                backup = deploy.backup_release([])
+                with deploy.tarfile.open(backup/'runtime-files.tar') as archive:
+                    self.assertEqual(archive.extractfile('uploads/video.mp4').read(), original)
 
 if __name__ == '__main__':
     unittest.main()

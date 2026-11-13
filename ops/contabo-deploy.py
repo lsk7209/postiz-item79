@@ -57,6 +57,15 @@ def readiness(args, image, customized=True):
     raise RuntimeError('App readiness deadline exceeded')
 
 def backup_release(args):
+    files = []
+    for name in ['uploads', 'app-config']:
+        folder = ROOT / name
+        require(folder.is_dir() and not folder.is_symlink(), 'Backup source must be a real directory')
+        entries = list(folder.rglob('*'))
+        require(not any(p.is_symlink() for p in entries), 'Backup source contains an unsupported symlink')
+        files.extend(p for p in entries if p.is_file())
+    size = sum(p.stat().st_size for p in files)
+    require(shutil.disk_usage(ROOT).free > size * 2 + 12 * 1024**3, 'Insufficient free space for recovery backup and safety margin')
     backup = ROOT / 'backups' / ('release-' + str(time.time_ns()))
     backup.mkdir(mode=0o700)
     for name in ['compose.yaml', 'app.env', '.env', 'wait-temporal.cjs']:
@@ -70,6 +79,14 @@ def backup_release(args):
         for name in ['uploads', 'app-config']:
             archive.add(ROOT / name, arcname=name)
     (backup / 'runtime-files.tar').chmod(0o600)
+    with tarfile.open(backup / 'runtime-files.tar', 'r') as archive:
+        members = {m.name: m for m in archive.getmembers() if m.isfile()}
+        require(len(members) == len(files), 'Runtime backup file count mismatch')
+        for file in files:
+            member = members[file.relative_to(ROOT).as_posix()]
+            require(member.size == file.stat().st_size, 'Runtime backup file size mismatch')
+            with archive.extractfile(member) as saved, file.open('rb') as original:
+                require(hashlib.file_digest(saved, 'sha256').digest() == hashlib.file_digest(original, 'sha256').digest(), 'Runtime backup content mismatch')
     return backup
 
 def validate_preview(image, config, args):
@@ -83,11 +100,11 @@ def validate_preview(image, config, args):
     preview.mkdir(mode=0o700)
     project = 'postiz-item79-preview-' + suffix
     network = project + '_default'
-    namespace = project
+    namespace = 'item79-release-preview'
     password = secrets.token_hex(32)
     values = {
         'JWT_SECRET': secrets.token_hex(32), 'DATABASE_URL': 'postgresql://postiz:' + password + '@preview-db:5432/postiz',
-        'REDIS_URL': 'redis://preview-redis:6379', 'TEMPORAL_ADDRESS': 'temporal:7233', 'TEMPORAL_NAMESPACE': namespace,
+        'REDIS_URL': 'redis://preview-redis:6379', 'TEMPORAL_ADDRESS': 'preview-temporal:7233', 'TEMPORAL_NAMESPACE': namespace,
         'MAIN_URL': 'http://127.0.0.1:34008', 'FRONTEND_URL': 'http://127.0.0.1:34008',
         'NEXT_PUBLIC_BACKEND_URL': 'http://127.0.0.1:34008/api', 'BACKEND_INTERNAL_URL': 'http://localhost:3000',
         'STORAGE_PROVIDER': 'local', 'UPLOAD_DIRECTORY': '/uploads', 'NEXT_PUBLIC_UPLOAD_DIRECTORY': '/uploads',
@@ -99,20 +116,24 @@ def validate_preview(image, config, args):
     settings = {'name': project, 'services': {
         'preview-db': {'image': config['services']['database']['image'], 'environment': {'POSTGRES_USER': 'postiz', 'POSTGRES_DB': 'postiz', 'POSTGRES_PASSWORD': password}, 'mem_limit': '512m', 'cpus': 0.5, 'healthcheck': {'test': ['CMD-SHELL', 'pg_isready -U postiz -d postiz'], 'interval': '2s', 'timeout': '2s', 'retries': 45}},
         'preview-redis': {'image': config['services']['redis']['image'], 'mem_limit': '128m', 'cpus': 0.25},
+        # This relay connects to one fixed internal service/port only. The web
+        # container stays on the internal network and cannot reach the internet.
+        'preview-temporal': {'image': image, 'mem_limit': '128m', 'cpus': 0.25, 'networks': ['default', 'temporal-access'],
+            'command': ['node', '-e', 'const net=require("node:net");net.createServer(s=>{const u=net.connect(7233,"temporal");s.pipe(u);u.pipe(s);u.on("error",()=>s.destroy());s.on("error",()=>u.destroy());s.on("close",()=>u.destroy());u.on("close",()=>s.destroy())}).listen(7233,"0.0.0.0")']},
         'web': {'image': image, 'env_file': 'web.env', 'volumes': [str(ROOT / 'uploads') + ':/uploads:ro'], 'mem_limit': '4g', 'cpus': 2,
                 'command': ['sh', '-c', 'nginx && pnpm --filter ./apps/frontend run pm2 && pnpm --filter ./apps/backend run pm2 && pm2 logs']},
-    }, 'networks': {'default': {'internal': True}}}
+    }, 'networks': {'default': {'internal': True}, 'temporal-access': {'external': True, 'name': 'postiz-center_default'}}}
     compose = preview / 'compose.yaml'
     compose.write_text(yaml.safe_dump(settings, sort_keys=False))
     compose.chmod(0o600)
     pc = ['docker', 'compose', '--project-directory', str(preview)]
     temporal = subprocess.check_output(args + ['ps', '-q', 'temporal']).decode().strip()
-    connected = False
     try:
-        subprocess.run(['docker', 'exec', temporal, 'tctl', '--address', 'temporal:7233', '--namespace', namespace, 'namespace', 'register', '--retention', '1'], stdout=subprocess.DEVNULL, check=True)
-        subprocess.run(pc + ['up', '-d', '--wait', 'preview-db', 'preview-redis'], check=True)
-        subprocess.run(['docker', 'network', 'connect', '--alias', 'temporal', network, temporal], check=True)
-        connected = True
+        ctl = ['docker', 'exec', temporal, 'tctl', '--address', 'temporal:7233', '--namespace', namespace, 'namespace']
+        exists = subprocess.run(ctl + ['describe'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if exists.returncode:
+            subprocess.run(ctl + ['register', '--retention', '1'], stdout=subprocess.DEVNULL, check=True)
+        subprocess.run(pc + ['up', '-d', '--wait', 'preview-db', 'preview-redis', 'preview-temporal'], check=True)
         dump = preview / 'postiz.dump'
         with dump.open('wb') as out:
             subprocess.run(args + ['exec', '-T', 'database', 'pg_dump', '-U', 'postiz', '-d', 'postiz', '-Fc'], stdout=out, check=True)
@@ -147,8 +168,6 @@ def validate_preview(image, config, args):
     finally:
         cleanup_errors = []
         commands = [pc + ['stop']]
-        # Attempt disconnect even if connect's result was interrupted or uncertain.
-        commands.append(['docker', 'network', 'disconnect', network, temporal])
         # Remove only the disposable containers/network; keep dumps, configs and production volumes.
         commands.append(pc + ['down'])
         for command in commands:
@@ -157,7 +176,7 @@ def validate_preview(image, config, args):
             except Exception:
                 cleanup_errors.append(command[1:])
                 continue
-            if result.returncode and (connected or command[1] != 'network'):
+            if result.returncode:
                 cleanup_errors.append(command[1:])
         attached = json.loads(subprocess.check_output(['docker', 'inspect', temporal, '--format', '{{json .NetworkSettings.Networks}}']))
         remaining = subprocess.check_output(['docker', 'ps', '-aq', '--filter', 'label=com.docker.compose.project=' + project]).strip()
@@ -189,6 +208,7 @@ def main():
         require(app['mem_limit'] == '4g' and app['cpus'] == 2, 'Resource limits changed')
         require(config['networks']['postiz-front']['name'] == 'imcloud-postiz-front', 'Unexpected front network')
         args = ['docker', 'compose', '--project-directory', str(ROOT)]
+        require(shutil.disk_usage(ROOT).free > 12 * 1024**3, 'Insufficient disk headroom for image pull and preview')
         with tempfile.TemporaryDirectory(prefix='item79-registry-') as registry:
             if packet.get('registryToken'):
                 subprocess.run(['docker', '--config', registry, 'login', 'ghcr.io', '-u', packet['registryUser'], '--password-stdin'], input=packet['registryToken'].encode(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
