@@ -1,3 +1,5 @@
+> Item79 customization of Postiz: see [ITEM79.md](ITEM79.md) for channel links, account labels, validation and the disabled Contabo delivery setup.
+
 <p align="center">
   <a href="https://postiz.com/" target="_blank">
   <picture>

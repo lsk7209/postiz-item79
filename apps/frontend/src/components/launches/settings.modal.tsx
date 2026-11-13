@@ -1,3 +1,4 @@
+import { GOOGLE_ACCOUNT_LABEL } from '@gitroom/helpers/utils/channel-account';
 import { TopTitle } from '@gitroom/frontend/components/launches/helpers/top.title.component';
 import React, { FC, useCallback, useState } from 'react';
 import { useModals } from '@gitroom/frontend/components/layout/new-modal';
@@ -65,7 +66,7 @@ export const SettingsModal: FC<{
   return (
     <div>
       <div className="mt-[16px]">
-        {values.map((setting: any, index: number) => (
+        {values.map((setting: any, index: number) => setting.title === GOOGLE_ACCOUNT_LABEL ? null : (
           <Element
             key={setting.title}
             setting={setting}

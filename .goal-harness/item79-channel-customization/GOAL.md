@@ -1,0 +1,1 @@
+Add exact YouTube channel outbound links and per-integration Google account labels in deployed-version Postiz fork. Preserve OAuth, calendar selection, reconnect, drag/menu, other provider settings. No credential guessing or DB schema changes. Delivery boundary GitHub push only; Contabo workflow prepared but disabled.

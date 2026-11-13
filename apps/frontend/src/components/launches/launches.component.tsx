@@ -34,6 +34,8 @@ import { HubspotInstalled } from '@gitroom/frontend/components/launches/hubspot.
 import { useModals } from '@gitroom/frontend/components/layout/new-modal';
 import { Input } from '@gitroom/react/form/input';
 import { Button } from '@gitroom/react/form/button';
+import { youtubeChannelUrl } from '@gitroom/helpers/utils/channel-account';
+import { ChannelAccountLabel } from './channel-account-label';
 
 export const SVGLine = () => {
   return (
@@ -349,6 +351,8 @@ export const MenuComponent: FC<
       id: integration.id,
     },
   }));
+  const channelUrl = integration.refreshNeeded || integration.inBetweenSteps
+    ? null : youtubeChannelUrl(integration.identifier, integration.internalId);
   return (
     <div
       // @ts-ignore
@@ -396,6 +400,10 @@ export const MenuComponent: FC<
             <div className="bg-primary/60 w-[39px] h-[46px] start-0 top-0 absolute rounded-full z-[199]" />
           </div>
         )}
+        {channelUrl ? (
+          <a href={channelUrl} target="_blank" rel="noopener noreferrer" draggable={false}
+            aria-label={`${integration.name} YouTube 채널 열기`}
+            onClick={event => event.stopPropagation()}>
         <ImageWithFallback
           fallbackSrc={'/no-picture.jpg'}
           src={integration.picture || '/no-picture.jpg'}
@@ -404,6 +412,17 @@ export const MenuComponent: FC<
           width={36}
           height={36}
         />
+          </a>
+        ) : (
+        <ImageWithFallback
+          fallbackSrc={'/no-picture.jpg'}
+          src={integration.picture || '/no-picture.jpg'}
+          className="rounded-[8px] min-w-[36px] min-h-[36px]"
+          alt={integration.identifier}
+          width={36}
+          height={36}
+        />
+        )}
         {integration.identifier === 'youtube' ? (
           <img
             src="/icons/platforms/youtube.svg"
@@ -435,11 +454,18 @@ export const MenuComponent: FC<
           : {})}
         role="Handle"
         className={clsx(
-          'group-[.sidebar]:hidden flex-1 whitespace-nowrap text-ellipsis overflow-hidden cursor-move',
+          'group-[.sidebar]:hidden flex-1 min-w-0 overflow-hidden cursor-move',
           integration.disabled && 'opacity-50'
         )}
       >
-        {integration.name}
+        {channelUrl ? <a href={channelUrl} target="_blank" rel="noopener noreferrer" draggable={false}
+          className="block truncate hover:underline focus-visible:underline"
+          title={`${integration.name} YouTube 채널 열기`} onClick={event => event.stopPropagation()}>
+          {integration.name}
+        </a> : <span className="block truncate">{integration.name}</span>}
+        {integration.identifier === 'youtube' && !collapsed &&
+          <ChannelAccountLabel key={integration.id} id={integration.id}
+            settings={integration.additionalSettings} onSaved={mutate} />}
       </div>
       <Menu
         canChangeProfilePicture={integration.changeProfilePicture}

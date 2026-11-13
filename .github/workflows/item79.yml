@@ -1,0 +1,75 @@
+name: Item79 checks and prepared Contabo delivery
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: item79-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Install isolated test compiler
+        run: npm install --prefix "$RUNNER_TEMP/item79-tests" --ignore-scripts --no-audit --no-fund typescript@5.5.4
+      - run: node --test tests/*.test.mjs
+        env:
+          NODE_PATH: ${{ runner.temp }}/item79-tests/node_modules
+      - run: python3 -m unittest discover -s tests -p "test_*.py"
+  image:
+    needs: checks
+    # Off by default. No image publication or production effect on this task's push.
+    if: github.event_name != 'pull_request' && vars.ITEM79_IMAGE_BUILD_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Build and publish exact-revision image
+        id: image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVISION: ${{ github.sha }}
+          REGISTRY_USER: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
+          image="ghcr.io/lsk7209/postiz-item79:$REVISION"
+          docker build -f Dockerfile.item79 --build-arg "ITEM79_REVISION=$REVISION" -t "$image" .
+          docker push "$image"
+          digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$image")
+          echo "image=$digest" >> "$GITHUB_OUTPUT"
+  deploy:
+    needs: image
+    # Must remain off until the deployment boundary explicitly permits activation.
+    if: github.ref == 'refs/heads/main' && vars.CONTABO_DEPLOY_ENABLED == 'true'
+    environment: contabo
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Deploy through restricted SSH entry point
+        env:
+          DEPLOY_KEY: ${{ secrets.CONTABO_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.CONTABO_HOST }}
+          DEPLOY_USER: ${{ secrets.CONTABO_USER }}
+          KNOWN_HOSTS: ${{ secrets.CONTABO_KNOWN_HOSTS }}
+          IMAGE: ${{ needs.image.outputs.image }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/item79
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          [[ "$IMAGE" =~ ^ghcr.io/lsk7209/postiz-item79@sha256:[a-f0-9]{64}$ ]]
+          ssh -i ~/.ssh/item79 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" "deploy $IMAGE"

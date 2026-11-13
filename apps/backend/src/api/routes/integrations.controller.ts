@@ -1,5 +1,7 @@
 import {
   Body,
+  BadRequestException,
+  ForbiddenException,
   Controller,
   Delete,
   Get,
@@ -145,6 +147,20 @@ export class IntegrationsController {
         })
       ),
     };
+  }
+
+  @Post('/:id/google-account-label')
+  async updateGoogleAccountLabel(
+    @GetOrgFromRequest() org: Organization & { users: { role: string }[] },
+    @Param('id') id: string,
+    @Body() body: { email?: unknown; expectedEmail?: unknown }
+  ) {
+    if (!['ADMIN', 'SUPERADMIN'].includes(org?.users?.[0]?.role)) throw new ForbiddenException();
+    if (typeof body?.email !== 'string' || body.email.length > 254 ||
+      !(body.expectedEmail === null || (typeof body.expectedEmail === 'string' && body.expectedEmail.length <= 254))) {
+      throw new BadRequestException('Invalid account record');
+    }
+    return this._integrationService.updateGoogleAccountLabel(org.id, id, body.email, body.expectedEmail as string | null);
   }
 
   @Post('/:id/settings')

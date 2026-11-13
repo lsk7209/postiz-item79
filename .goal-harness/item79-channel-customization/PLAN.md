@@ -1,0 +1,1 @@
+Implement minimal sidebar/metadata UI; focused behavior tests and frontend typecheck/build; independent review; create dedicated AGPL source repository and CI; prepare disabled Contabo deployment using same project/volumes; push and record actual proof. No production deployment under current global boundary.

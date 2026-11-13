@@ -1,0 +1,1 @@
+VERIFYING: Feature/admin/CAS changes complete, focused10testsPASS, backend tscPASS, final typecheck and frontendbuild pending. Dedicated public source repository created https://github.com/lsk7209/postiz-item79, not pushed yet. CI checks prepared; image/deploy disabled. Existing Contabo runtime and source preserved.

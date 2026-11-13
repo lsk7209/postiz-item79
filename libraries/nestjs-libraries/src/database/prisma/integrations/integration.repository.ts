@@ -1,5 +1,6 @@
 import { PrismaRepository } from '@gitroom/nestjs-libraries/database/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { GOOGLE_ACCOUNT_LABEL, accountSettings, googleAccountLabel, withGoogleAccountLabel } from '@gitroom/helpers/utils/channel-account';
 import { createHash } from 'crypto';
 import dayjs from 'dayjs';
 import { Integration, Prisma } from '@prisma/client';
@@ -92,16 +93,43 @@ export class IntegrationRepository {
     return findIt.length > 0;
   }
 
-  updateProviderSettings(org: string, id: string, settings: string) {
-    return this._integration.model.integration.update({
-      where: {
-        id,
-        organizationId: org,
-      },
-      data: {
-        additionalSettings: settings,
-      },
+  async updateGoogleAccountLabel(org: string, id: string, email: string, expectedEmail: string | null) {
+    const current = await this._integration.model.integration.findFirst({
+      where: { id, organizationId: org, providerIdentifier: 'youtube', deletedAt: null },
+      select: { additionalSettings: true, updatedAt: true },
     });
+    if (!current) throw new NotFoundException();
+    if (googleAccountLabel(current.additionalSettings) !== expectedEmail) throw new ConflictException('Account record changed. Reload before saving.');
+    let settings: string;
+    try { settings = withGoogleAccountLabel(current.additionalSettings, email); }
+    catch { throw new BadRequestException('Invalid Google account email or channel settings'); }
+    const changed = await this._integration.model.integration.updateMany({
+      where: { id, organizationId: org, providerIdentifier: 'youtube', deletedAt: null, updatedAt: current.updatedAt, additionalSettings: current.additionalSettings },
+      data: { additionalSettings: settings },
+    });
+    if (changed.count !== 1) throw new ConflictException('Channel changed. Reload before saving.');
+    return { saved: true };
+  }
+
+  async updateProviderSettings(org: string, id: string, settings: string) {
+    const current = await this._integration.model.integration.findFirst({
+      where: { id, organizationId: org, deletedAt: null },
+      select: { additionalSettings: true, updatedAt: true },
+    });
+    if (!current) throw new NotFoundException();
+    // Generic provider settings cannot change the admin-only account record.
+    let next: string;
+    try {
+      const incoming = accountSettings(settings).filter(p => p.title !== GOOGLE_ACCOUNT_LABEL);
+      const reserved = accountSettings(current.additionalSettings).filter(p => p.title === GOOGLE_ACCOUNT_LABEL);
+      next = JSON.stringify([...incoming, ...reserved]);
+    } catch { throw new BadRequestException('Invalid channel settings'); }
+    const changed = await this._integration.model.integration.updateMany({
+      where: { id, organizationId: org, deletedAt: null, updatedAt: current.updatedAt, additionalSettings: current.additionalSettings },
+      data: { additionalSettings: next },
+    });
+    if (changed.count !== 1) throw new ConflictException('Channel changed. Reload before saving.');
+    return { saved: true };
   }
 
   updateCustomName(org: string, id: string, name: string) {

@@ -75,6 +75,10 @@ export class IntegrationService {
     return this._integrationRepository.setTimes(orgId, integrationId, times);
   }
 
+  updateGoogleAccountLabel(org: string, id: string, email: string, expectedEmail: string | null) {
+    return this._integrationRepository.updateGoogleAccountLabel(org, id, email, expectedEmail);
+  }
+
   updateProviderSettings(org: string, id: string, additionalSettings: string) {
     return this._integrationRepository.updateProviderSettings(
       org,
