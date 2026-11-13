@@ -21,3 +21,8 @@ dist
 .git
 .github
 reports
+.runtime
+.secrets
+.env
+.env.*
+.goal-harness

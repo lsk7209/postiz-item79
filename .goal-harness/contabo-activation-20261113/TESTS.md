@@ -1,0 +1,7 @@
+- node --test tests/*.test.mjs
+- python -m unittest discover -s tests -p test_*.py
+- GitHub actual Docker build and immutable package digest
+- Isolated preview HTTP, source schema equality and customized frontend/backend artifact checks
+- Before/after DB/resource/upload invariants and actual rollback drill
+- Push-triggered workflow, exact running OCI revision and public HTTPS login/closed registration
+- Actual authenticated sidebar, exact YouTube channel link and reversible admin email record persistence

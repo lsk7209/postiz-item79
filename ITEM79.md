@@ -20,12 +20,12 @@ is hidden from the generic boolean settings editor. No DB schema change is requi
 
 ## Delivery state and activation
 
-**Current delivery boundary: GitHub only. The Contabo site has not been updated.**
+**Activation authorized 2026-11-13; see PROJECT_STATE.md and the Contabo activation harness for verified current release evidence.**
 CI runs deterministic metadata/link tests on push. Image build and production deploy
 are both disabled unless their explicit repository variables are enabled. No deploy
 key, registry credential or production environment file is committed.
 
-After deployment is separately permitted, an operator must:
+The production release path requires:
 
 1. Build and test the complete image in `Dockerfile.item79`, review the digest and
    preview the actual full/mobile sidebar and metadata persistence before release.
@@ -33,20 +33,34 @@ After deployment is separately permitted, an operator must:
    `ops/contabo-deploy.py`. Pin the existing server host key; no auto-accept.
 3. Use only the existing `/opt/postiz-center-20261112` project. Keep its startup guard,
    CPU/memory caps, private app port, network, secrets, database and uploads intact.
-4. Ensure the server can pull the package (public GHCR or a separately scoped read-only
-   registry credential). Never reuse an unrestricted admin key for GitHub Actions.
+4. Pass the deploy job's short-lived `packages:read` token over SSH stdin. The server
+   logs in using a private temporary Docker configuration removed after pull; no
+   permanent registry token or unrestricted admin key is supplied to Actions.
 5. Preserve a DB backup and source recovery before release. The upstream image runs
    Prisma db push on startup. This patch has no schema changes; future
    schema updates require their own migration review and data recovery plan.
 6. Configure secrets `CONTABO_DEPLOY_KEY`, `CONTABO_HOST`, `CONTABO_USER`,
    `CONTABO_KNOWN_HOSTS`; enable `ITEM79_IMAGE_BUILD_ENABLED` and, only after all checks,
    `CONTABO_DEPLOY_ENABLED`. Forced command must deliberately enable
-   `ITEM79_ALLOW_DEPLOY=true` after authorization. Current variables remain unset.
+   `ITEM79_ALLOW_DEPLOY=true` after authorization. The root-owned wrapper supplies this
+   gate; the dedicated SSH key is restricted to exact Item79 digest releases.
 
 The prepared deploy script only replaces the app's pinned image, serializes releases,
-checks login/closed registration, and restores the previous compose on failed readiness.
+checks the OCI source revision, unchanged schema, startup guard and resource limits,
+tests a loopback-only preview against a cloned DB with read-only uploads, separate Redis,
+an isolated Temporal namespace and web processes only (no publishing workers),
+backs up the DB/config before every replacement, checks login/closed registration and
+the protected custom route, and restores the previous compose plus checks recovery
+readiness on failure. `main` pushes run checks, build/push an immutable image and deploy
+when the two explicit repository switches are enabled. Releases are serialized.
 Image rollback is not a database rollback. Production authentication, video scheduling,
 volume continuity, and a full rollback drill must be verified on actual release.
+
+The deployment credential has no interactive shell, PTY, port forwarding or general
+Docker/sudo access. Its root-owned entry point accepts only
+`deploy ghcr.io/lsk7209/postiz-item79@sha256:<64 hex>`, and a stdin JSON object containing
+the exact source `revision`, `registryUser` and short-lived `registryToken`. The workflow
+checks are required dependencies of release jobs. This workflow does not publish videos.
 
 ## Source license
 

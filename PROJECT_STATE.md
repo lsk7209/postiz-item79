@@ -1,3 +1,12 @@
+# Contabo activation in progress — explicit user resume 2026-11-13
+
+Current canonical execution evidence: `.goal-harness/contabo-activation-20261113/STATUS.md` and `EVIDENCE.md`.
+User explicitly requested activating prepared Contabo automatic deployment and verifying the actual operating screen. Repository/host/project identity verified; original production app and data still preserved. Initial Docker image built successfully in run43354732929; private preview validation is in progress. Restricted SSH account and main-only GitHub environment configured. Production deployment remains disabled until preview and review pass. Do not report production completion yet.
+
+# Historical stop snapshot — superseded by explicit resume above
+
+Do not auto-resume. Canonical handoff: .goal-harness/item79-channel-customization/SESSION_STOP_20261113.md. Code/GitHub delivery complete; Contabo customization and automatic deployment still NOT applied. Global rule replacement/application unverified. Stop record only, no new commit/push/deployment.
+
 # Item79 Postiz source customization — 2026-11-13
 
 Repository: https://github.com/lsk7209/postiz-item79. Workspace: D:/program-codex/postiz-item79.
