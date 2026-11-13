@@ -215,7 +215,7 @@ def main():
         app = config['services']['app']
         require(app['env_file'] == 'app.env', 'Unexpected app environment file')
         require(app['ports'] == ['127.0.0.1:34007:5000'], 'App must remain loopback-only')
-        require(app['command'] == ['sh', '-c', 'node /app/wait-temporal.cjs && nginx && pnpm run pm2'], 'Startup dependency guard changed')
+        require(app['command'] == ['sh', '-c', 'node /app/wait-temporal.cjs && cp /config/oauth-nginx.conf /etc/nginx/nginx.conf && nginx && pnpm run pm2'], 'Startup dependency/OAuth guard changed')
         require(app['mem_limit'] == '4g' and app['cpus'] == 2, 'Resource limits changed')
         require(config['networks']['postiz-front']['name'] == 'imcloud-postiz-front', 'Unexpected front network')
         args = ['docker', 'compose', '--project-directory', str(ROOT)]
@@ -227,10 +227,13 @@ def main():
         metadata = json.loads(subprocess.check_output(['docker', 'image', 'inspect', image]))[0]
         require(metadata['Config']['Labels'].get('org.opencontainers.image.revision') == revision, 'Image/source revision mismatch')
         old_container = subprocess.check_output(args + ['ps', '-q', 'app']).decode().strip()
+        nginx = ROOT / 'app-config' / 'oauth-nginx.conf'
+        require(nginx.is_file() and not nginx.is_symlink(), 'Persisted OAuth nginx configuration missing')
+        require(nginx.read_bytes() == subprocess.check_output(['docker', 'exec', old_container, 'cat', '/etc/nginx/nginx.conf']), 'Persisted OAuth nginx differs from the running fallback')
         old_schema = subprocess.check_output(['docker', 'exec', old_container, 'cat', SCHEMA])
         new_schema = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'cat', image, SCHEMA])
         require(old_schema == new_schema, 'Schema changes require separate migration review')
-        config_hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ['compose.yaml', 'app.env', '.env', 'wait-temporal.cjs']}
+        config_hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ['compose.yaml', 'app.env', '.env', 'wait-temporal.cjs', 'app-config/oauth-nginx.conf']}
         web = support_module('item79_web_release')
         web.release(image, revision, args, validate_preview=lambda: validate_preview(image, config, args), backup_release=lambda: backup_release(args))
         require(all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest for name, digest in config_hashes.items()), 'Retained worker configuration changed')

@@ -27,7 +27,7 @@ class DeploymentGuardTest(unittest.TestCase):
                 deploy.main()
             run.assert_not_called()
 
-    def release_case(self, fail_readiness=False, schema_changed=False, preview_failed=False):
+    def release_case(self, fail_readiness=False, schema_changed=False, preview_failed=False, oauth_drift=False):
         old_image = 'ghcr.io/gitroomhq/postiz-app@sha256:' + 'b' * 64
         new_image = deploy.PREFIX + 'a' * 64
         revision = 'c' * 40
@@ -36,7 +36,7 @@ class DeploymentGuardTest(unittest.TestCase):
         web = types.SimpleNamespace(release=Mock(side_effect=RuntimeError('web release failed') if fail_readiness or preview_failed else None))
         config = {'name': 'postiz-center', 'services': {'app': {
             'image': old_image, 'env_file': 'app.env', 'ports': ['127.0.0.1:34007:5000'],
-            'command': ['sh', '-c', 'node /app/wait-temporal.cjs && nginx && pnpm run pm2'],
+            'command': ['sh', '-c', 'node /app/wait-temporal.cjs && cp /config/oauth-nginx.conf /etc/nginx/nginx.conf && nginx && pnpm run pm2'],
             'mem_limit': '4g', 'cpus': 2}}, 'networks': {'postiz-front': {'name': 'imcloud-postiz-front'}}}
         fake_yaml = types.SimpleNamespace(safe_load=json.loads, safe_dump=json.dumps)
         fake_lock = types.SimpleNamespace(flock=Mock(), LOCK_EX=1, LOCK_NB=2)
@@ -47,6 +47,8 @@ class DeploymentGuardTest(unittest.TestCase):
             (root/'compose.yaml').write_bytes(before)
             for name in ['app.env', '.env', 'wait-temporal.cjs']:
                 (root/name).write_text('protected')
+            (root/'app-config').mkdir()
+            (root/'app-config'/'oauth-nginx.conf').write_bytes(b'drifted' if oauth_drift else b'schema')
             def output(command):
                 if command[:3] == ['docker', 'image', 'inspect']:
                     return json.dumps([{'Config': {'Labels': {'org.opencontainers.image.revision': revision}}}]).encode()
@@ -58,7 +60,7 @@ class DeploymentGuardTest(unittest.TestCase):
                     return b'changed' if schema_changed else b'schema'
                 raise AssertionError(command)
             with patch.object(deploy, 'ROOT', root), patch.object(deploy.shutil, 'disk_usage', return_value=types.SimpleNamespace(free=100 * 1024**3)), patch.dict(deploy.os.environ, {'ITEM79_ALLOW_DEPLOY': 'true', 'SSH_ORIGINAL_COMMAND': 'deploy ' + new_image}, clear=True), patch.dict('sys.modules', {'fcntl': fake_lock, 'yaml': fake_yaml}), patch.object(deploy.sys, 'stdin', io.StringIO(json.dumps(packet))), patch.object(deploy.subprocess, 'check_output', side_effect=output), patch.object(deploy.subprocess, 'run') as run, patch.object(deploy, 'support_module', side_effect=lambda name: policy if name == 'item79_release_policy' else web):
-                if schema_changed or fail_readiness or preview_failed:
+                if schema_changed or fail_readiness or preview_failed or oauth_drift:
                     with self.assertRaises(RuntimeError):
                         deploy.main()
                     self.assertEqual((root/'compose.yaml').read_bytes(), before)
@@ -66,7 +68,7 @@ class DeploymentGuardTest(unittest.TestCase):
                     deploy.main()
                 self.assertEqual((root/'compose.yaml').read_bytes(), before)
                 self.assertFalse(any('up' in call.args[0] for call in run.call_args_list))
-                if schema_changed:
+                if schema_changed or oauth_drift:
                     web.release.assert_not_called()
                 else:
                     web.release.assert_called_once()
@@ -83,6 +85,9 @@ class DeploymentGuardTest(unittest.TestCase):
 
     def test_failed_preview_leaves_production_app_untouched(self):
         self.release_case(preview_failed=True)
+
+    def test_oauth_nginx_drift_blocks_web_release(self):
+        self.release_case(oauth_drift=True)
 
     def test_backup_rejects_low_disk_before_running_dump(self):
         with tempfile.TemporaryDirectory() as directory:
