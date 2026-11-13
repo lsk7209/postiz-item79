@@ -1,8 +1,8 @@
-Current State: IMPLEMENTING
-Current Phase: actual warm-slot rollback rehearsal and final scoped review
-Completed: verified Contabo/OVH identity/isolation; daily03:15KST encrypted source backup; hourly encrypted OVH Restic pull/full restore+file hash; weekly full repository integrity timer; isolated PostgreSQL/Postiz/Temporal and Redis restore/load proof;33 Python tests pass(1 Windows symlink privilege skip),8 Node tests pass. Existing dirty stop file preserved.
-In Progress: real warm-slot switch/failure/rollback rehearsal with independent one-second HTTP observations; source-policy/schema/worker compatibility gates; review fixes for GitHub pagination/cursor/observer alerts; actual routine release through Actions.
-Remaining: actual failed-deploy/outage recipient delivery, successful warm web rollout, committed/pushed workflow and final continuity/UI proof.
-Blocked: actual notification delivery depends on the pending user channel/recipient response. Independent backup/release work continues.
-Last Verification: repository public lsk7209/postiz-item79; main466641e5 is documentation-only over deployed2c951cf3, existing original stop file untracked.
-Next Action: complete current rollback rehearsal; integrate review, commit/push and verify new release. Keep recipient delivery HOLD explicit.
+Current State: WAITING_FOR_NOTIFICATION_DESTINATION
+Current Phase: backup and warm-release verified; actual notification delivery incomplete
+Completed: daily03:15KST encrypted source backup; hourly independent OVH encrypted Restic copy/full restore+hash; weekly full repository timer and actual read-all check; isolated Postiz/Temporal/Redis restore; new post-release91file snapshot restored/hashed; actual warm switch+failure rollback; CI34Python+8Node PASS(no CI skips); push run43374466169 and deployment7758307067 SUCCESS. Original worker/PID/restart/config/schema,78upload hashes, original record IDs and185existing container identities/states unchanged. Authenticated calendar/3channels observed. External3,140HTTP requests over1662seconds:0failures. Original dirty stop file preserved.
+In Progress: none beyond missing recipient/provider configuration; no message delivery attempted.
+Remaining: receive intended channel/recipient; install private working provider settings, test actual delivery and confirm outage/recovery/deploy-failure events reach that destination. Keep existing monitor/timers/queued event; do not duplicate jobs or infer a recipient.
+Blocked Input: pending async channel/recipient question remains unanswered. This is missing information, not a request for deployment permission.
+Last Verification: public web e46520f1b1ae795fee2b07f0c066cb5c06663756, image sha256:3a6c3fea7b71a6b03dc490722c2006afdf7e7ad94ed9469df461b7221c6550ad; retained original worker2c951cf3. Full exact proof in verification.json. Final documentation-only commit skips CI; does not alter runtime behavior.
+Next Action: after user's recipient response, configure/test delivery only and update this harness; do not redo the verified deployment or backups.

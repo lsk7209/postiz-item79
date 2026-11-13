@@ -20,60 +20,51 @@ is hidden from the generic boolean settings editor. No DB schema change is requi
 
 ## Delivery state and activation
 
-**Activation authorized 2026-11-13; see PROJECT_STATE.md and the Contabo activation harness for verified current release evidence.**
-Actual automatic main-push run43357711188 completed all three jobs successfully;
-Contabo runs2c951cf3. Public authenticated desktop/mobile link and save/reload/clear
-checks passed. Both delivery variables remain enabled. The final documentation-only
-evidence commit skips CI to avoid a redundant app restart; runtime code is unchanged.
-CI runs deterministic metadata/link tests on push. Image build and production deploy
-are both disabled unless their explicit repository variables are enabled. No deploy
-key, registry credential or production environment file is committed.
+**Automatic deployment is active.** See `PROJECT_STATE.md`,
+`.goal-harness/operations-hardening-20261113/verification.json` and
+`ops/ITEM79-OPERATIONS.md` for current evidence and recovery procedures.
+Main-push run43374466169 and Contabo deployment7758307067 succeeded. The public
+web runs `e46520f1`; the original `2c951cf3` all-in-one container remains the sole
+publishing orchestrator and live fallback. Both delivery variables stay enabled.
+Initial customization link/save/reload/clear checks were completed in the prior
+activation; this follow-up rechecked the actual authenticated calendar and channels.
 
-The production release path requires:
+Main pushes run deterministic tests, source compatibility policy, immutable image
+build/push and the restricted root-owned deploy entry point. A new web-only blue or
+green slot passes cloned-DB preview and readiness before the dedicated proxy route
+switches. It never starts an orchestrator or pushes a schema. The original app is
+not recreated during ordinary releases; previous web slots remain warm and busy
+connections are protected before reuse or failed-candidate cleanup. Failure restores
+the exact prior route and verifies public recovery; interrupted releases reconcile a
+durable journal. Actual switch/rollback and successful Actions deployment were tested.
+The external probe observed3,140requests without failure over about28minutes; this
+does not prove absolute zero downtime between samples.
 
-1. Build and test the complete image in `Dockerfile.item79`, review the digest and
-   preview the actual full/mobile sidebar and metadata persistence before release.
-2. Configure a dedicated restricted SSH key and root-owned forced command for
-   `ops/contabo-deploy.py`. Pin the existing server host key; no auto-accept.
-3. Use only the existing `/opt/postiz-center-20261112` project. Keep its startup guard,
-   CPU/memory caps, private app port, network, secrets, database and uploads intact.
-4. Pass the deploy job's short-lived `packages:read` token over SSH stdin. The server
-   logs in using a private temporary Docker configuration removed after pull; no
-   permanent registry token or unrestricted admin key is supplied to Actions.
-5. Preserve a DB backup and source recovery before release. The upstream image runs
-   Prisma db push on startup. This patch has no schema changes; future
-   schema updates require their own migration review and data recovery plan.
-6. Configure secrets `CONTABO_DEPLOY_KEY`, `CONTABO_HOST`, `CONTABO_USER`,
-   `CONTABO_KNOWN_HOSTS`; enable `ITEM79_IMAGE_BUILD_ENABLED` and, only after all checks,
-   `CONTABO_DEPLOY_ENABLED`. Forced command must deliberately enable
-   `ITEM79_ALLOW_DEPLOY=true` after authorization. The root-owned wrapper supplies this
-   gate; the dedicated SSH key is restricted to exact Item79 digest releases.
+Keep the exact existing project, startup dependency/OAuth Nginx guard, original
+4GiB/2CPU app cap and loopback34007, secrets, databases, queues and uploads intact.
+Web slots use loopback34008/34009 with2GiB/1CPU limits. Live schema diff, retained
+worker runtime closure, original container/PID/restart counts and selected task-queue
+sentinels are checked. Routine source policy rejects worker/shared contract/schema/
+dependency/base-image changes; those require deliberate compatibility review.
+No automatic schema migration or image rollback as a database rollback is allowed.
 
-The prepared deploy script only replaces the app's pinned image, serializes releases,
-checks the OCI source revision, unchanged schema, startup guard and resource limits,
-tests a loopback-only preview against a cloned DB with read-only uploads, separate Redis,
-an isolated Temporal namespace and web processes only (no publishing workers),
-backs up the DB/config before every replacement, checks login/closed registration and
-the protected custom route, and restores the previous compose plus checks recovery
-readiness on failure. `main` pushes run checks, build/push an immutable image and deploy
-when the two explicit repository switches are enabled. Releases are serialized.
-Image rollback is not a database rollback. Production authentication, video scheduling,
-volume continuity, and a full rollback drill must be verified on actual release.
-Those activation checks have now passed; future scheduled-post outcomes are separate
-from this release verification. The app is recreated during release (restart window).
+The dedicated deployment key has no interactive shell, PTY, forwarding or general
+Docker/sudo access. It accepts only an exact Item79 image digest and stdin JSON with
+revision, source-policy fields and a short-lived `packages:read` registry credential.
+Temporary registry credentials are removed after pull. Server privileged code updates
+require reviewed root installation; Actions cannot replace it. Existing environment
+secrets `CONTABO_DEPLOY_KEY`, `CONTABO_HOST`, `CONTABO_USER`, `CONTABO_KNOWN_HOSTS`
+and switches `ITEM79_IMAGE_BUILD_ENABLED`/`CONTABO_DEPLOY_ENABLED` remain in use.
 
-The deployment credential has no interactive shell, PTY, port forwarding or general
-Docker/sudo access. Its root-owned entry point accepts only
-`deploy ghcr.io/lsk7209/postiz-item79@sha256:<64 hex>`, and a stdin JSON object containing
-the exact source `revision`, `registryUser` and short-lived `registryToken`. The workflow
-checks are required dependencies of release jobs. This workflow does not publish videos.
-
-Preview reuses the dedicated `item79-release-preview` Temporal namespace, with no workers
-and cron disabled. A fixed internal TCP7233 relay reaches Temporal without modifying its
-network attachments. Every preview uses unique disposable web/DB/Redis/relay containers;
-dump/config evidence remains private under the project. Release fails closed if cleanup
-is incomplete. Image pulls need at least12GiB free; recovery backup additionally reserves
-twice the runtime-file size plus12GiB. Every archived runtime file is read back and hashed.
+Preview reuses `item79-release-preview`, with cloned PostgreSQL, private Redis,
+read-only uploads and a fixed internal Temporal relay; web has no outbound internet
+or publishing worker. Disposable containers/network are cleaned and private recovery
+evidence retained. Image pulls reserve12GiB; snapshot archive files are read back
+and hashed. Automatic daily encrypted source backup and independent OVH encrypted
+storage/restore checks are active. Existing backups are retained without pruning.
+Availability and deployment-failure monitoring runs on OVH; actual message delivery
+is still waiting for the user's recipient/provider configuration. No alert has been
+sent. This workflow does not upload or publish videos.
 
 ## Source license
 

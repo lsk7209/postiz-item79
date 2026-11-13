@@ -1,0 +1,277 @@
+{
+  "recordedAt": "2026-11-13T06:01:17.555544+00:00",
+  "status": "BACKUP_AND_WARM_RELEASE_VERIFIED_NOTIFICATION_DELIVERY_WAITING_FOR_RECIPIENT",
+  "workflow": {
+    "run": 43374466169,
+    "url": "https://github.com/lsk7209/postiz-item79/actions/runs/43374466169",
+    "commit": "e46520f1b1ae795fee2b07f0c066cb5c06663756",
+    "conclusion": "success",
+    "jobs": {
+      "checks": "success",
+      "image": "success",
+      "deploy": "success"
+    },
+    "deploymentId": 7758307067,
+    "deploymentState": "success"
+  },
+  "tests": {
+    "linuxCI": {
+      "python": 34,
+      "node": 8,
+      "skipped": 0
+    },
+    "windows": {
+      "python": 34,
+      "node": 8,
+      "skipped": 1
+    }
+  },
+  "source": {
+    "host": "vmi3690013",
+    "release": {
+      "version": 1,
+      "activeSlot": "blue",
+      "revision": "e46520f1b1ae795fee2b07f0c066cb5c06663756",
+      "image": "ghcr.io/lsk7209/postiz-item79@sha256:3a6c3fea7b71a6b03dc490722c2006afdf7e7ad94ed9469df461b7221c6550ad",
+      "previousSlot": null,
+      "worker": {
+        "container": "980cdb92a8b1aba4477942aafa4c932669e39b9b06ea13c3111d7a6084609862",
+        "image": "ghcr.io/lsk7209/postiz-item79@sha256:2bad13fd750daa7b6c1a55f83f85955c47869ac46117cb9f0d7eb74407a95900",
+        "pid": 193,
+        "restarts": 0,
+        "sentinelPollerFingerprint": "4e5aba74a1ad3c81a7937df636106ecef55da7cb7fc0e54a8a22f22170422a04"
+      },
+      "workerRuntimeFingerprint": "03600038568011903bef9f4b3f22191ac89f08e86c39b718e7befab5747ea397",
+      "updatedAt": 1794549446.7234607,
+      "backup": "/opt/postiz-center-20261112/backups/release-1794549310476016026"
+    },
+    "actualWebImage": "ghcr.io/lsk7209/postiz-item79@sha256:3a6c3fea7b71a6b03dc490722c2006afdf7e7ad94ed9469df461b7221c6550ad",
+    "actualWebContainer": "8054c9db1aaeb470b37acbb1a3232b15b14f58f00fe156c4e43fc24f70c54736",
+    "actualWebProcesses": [
+      "frontend",
+      "backend"
+    ],
+    "webOOMKilled": false,
+    "webMemoryLimit": 2147483648,
+    "webCpuLimit": 1000000000,
+    "workerIdentityUnchanged": true,
+    "worker": {
+      "container": "980cdb92a8b1aba4477942aafa4c932669e39b9b06ea13c3111d7a6084609862",
+      "image": "ghcr.io/lsk7209/postiz-item79@sha256:2bad13fd750daa7b6c1a55f83f85955c47869ac46117cb9f0d7eb74407a95900",
+      "pid": 193,
+      "restarts": 0,
+      "sentinelPollerFingerprint": "4e5aba74a1ad3c81a7937df636106ecef55da7cb7fc0e54a8a22f22170422a04"
+    },
+    "configHashesUnchanged": true,
+    "existingUploadHashesUnchanged": 78,
+    "existingRecordIdsPreserved": {
+      "User": {
+        "before": 1,
+        "after": 1
+      },
+      "Organization": {
+        "before": 1,
+        "after": 1
+      },
+      "Integration": {
+        "before": 4,
+        "after": 4
+      },
+      "Post": {
+        "before": 65,
+        "after": 65
+      },
+      "Media": {
+        "before": 65,
+        "after": 65
+      }
+    },
+    "liveSchemaDiffExitCode": 0,
+    "publicRevisionVerified": true,
+    "closedRegistration": true,
+    "anonymousCustomRouteStatus": 401,
+    "rollbackRehearsal": {
+      "actualWarmSlotReady": true,
+      "actualProxySwitchTested": true,
+      "injectedFailureRestoredOriginalRoute": true,
+      "workerIdentityUnchanged": true,
+      "worker": {
+        "container": "980cdb92a8b1aba4477942aafa4c932669e39b9b06ea13c3111d7a6084609862",
+        "image": "ghcr.io/lsk7209/postiz-item79@sha256:2bad13fd750daa7b6c1a55f83f85955c47869ac46117cb9f0d7eb74407a95900",
+        "pid": 193,
+        "restarts": 0,
+        "pollerFingerprint": "4e5aba74a1ad3c81a7937df636106ecef55da7cb7fc0e54a8a22f22170422a04"
+      },
+      "originalConfigUnchanged": true,
+      "verifiedAt": 1794548507.9976892
+    },
+    "backupTimer": "active",
+    "sourceSnapshot": {
+      "version": 1,
+      "snapshot": "20261113T055740Z-fcffceb0",
+      "filename": "20261113T055740Z-fcffceb0.tar.gz.age",
+      "createdAt": "2026-11-13T05:57:57.890165+00:00",
+      "bytes": 173872543,
+      "sha256": "df24b1c0cea30f9b3f2bf63e61e27728fe816bb3f5b7a8255c71f7fdfaedd33b",
+      "fileCount": 91,
+      "manifestSha256": "ca88f0e5d00f093b8ee55d4a6333eae8b6d4ca9c9e2fb049c6c33aa7b6a0c15e"
+    },
+    "sourcePlaintextStaging": [],
+    "pendingReleaseJournal": false,
+    "verifiedAt": 1794549526.5200398,
+    "actualWebRevisionLabel": "e46520f1b1ae795fee2b07f0c066cb5c06663756",
+    "oauthNginxRuntimeMatchesPersisted": true,
+    "existingContainerIdentityStateUnchanged": 185
+  },
+  "offsite": {
+    "host": "vps-ce781f0f",
+    "timers": {
+      "item79-offsite.timer": {
+        "enabled": "enabled",
+        "active": "active"
+      },
+      "item79-offsite-check.timer": {
+        "enabled": "enabled",
+        "active": "active"
+      },
+      "item79-monitor.timer": {
+        "enabled": "enabled",
+        "active": "active"
+      }
+    },
+    "latestBackup": {
+      "snapshot": "20261113T055740Z-fcffceb0",
+      "resticSnapshot": "86395a1d7fccc0ef60de27aa9668e200c671c206d484f2f03c9efd90f206a66a",
+      "cipherSha256": "df24b1c0cea30f9b3f2bf63e61e27728fe816bb3f5b7a8255c71f7fdfaedd33b",
+      "manifestSha256": "ca88f0e5d00f093b8ee55d4a6333eae8b6d4ca9c9e2fb049c6c33aa7b6a0c15e",
+      "fileCount": 91,
+      "verifiedAt": "2026-11-13T05:59:22.592131+00:00",
+      "allFilesRestoredAndHashed": true
+    },
+    "isolatedDatabaseRestore": {
+      "snapshot": "20261113T051053Z-00cd531f",
+      "resticSnapshot": "1facf8d11fb98ee5c2322af77ad8eaea2b0487503adbe806dbf52b0da8a42967",
+      "postgresRestore": true,
+      "temporalRestore": true,
+      "redisSnapshotLoaded": true,
+      "redisKeyCount": 2,
+      "restoredPostizCounts": {
+        "User": 1,
+        "Organization": 1,
+        "Integration": 4,
+        "Post": 65,
+        "Media": 65
+      },
+      "temporalTableCount": 37,
+      "network": "none",
+      "applicationOrPublishingWorkersStarted": false,
+      "verifiedAt": 1794547805.5080283
+    },
+    "repositoryIntegrity": {
+      "event": "offsite_repository_check_passed",
+      "verifiedAt": "2026-11-13T05:41:09.885056+00:00"
+    },
+    "monitor": {
+      "siteHealthy": true,
+      "githubObservable": true,
+      "githubScanSince": "2026-11-13T05:54:49Z",
+      "githubFailures": 0,
+      "offsiteBackupFresh": true,
+      "notificationConfigured": false,
+      "lastCheckedAt": 1794549589,
+      "sourceDiskFree": 67833102336,
+      "sourceExportBytes": 347740887,
+      "storageHeadroomBytes": 23357272064
+    },
+    "pendingKinds": [
+      "deploy_failed"
+    ],
+    "deliveredCount": 0,
+    "privateModes": {
+      "restic-password": {
+        "owner": 0,
+        "mode": "0o600"
+      },
+      "backup-age-key.txt": {
+        "owner": 0,
+        "mode": "0o600"
+      },
+      "source-read-key": {
+        "owner": 0,
+        "mode": "0o600"
+      },
+      "offsite.json": {
+        "owner": 0,
+        "mode": "0o600"
+      },
+      "monitor.json": {
+        "owner": 0,
+        "mode": "0o600"
+      }
+    },
+    "stagingEntries": [],
+    "verifiedAt": 1794549631.5020173
+  },
+  "availability": {
+    "source": "independent OVH public HTTPS probe",
+    "samplingTargetSeconds": 1,
+    "firstAt": 1794547967.6079404,
+    "lastAt": 1794549629.7767262,
+    "elapsedSeconds": 1662.17,
+    "samplePairs": 1570,
+    "requests": 3140,
+    "failures": 0,
+    "intendedRevisionResponses": 396,
+    "intendedRevisionFailures": 0,
+    "revisionCounts": {
+      "None": 2732,
+      "e46520f1b1ae795fee2b07f0c066cb5c06663756": 396,
+      "2c951cf3b67520ad449bb7d5a9d850518dbf3a89": 12
+    },
+    "sampleGapMedianSeconds": 1.0,
+    "sampleGapMaxSeconds": 5.778,
+    "requestMaxSeconds": 5.778,
+    "interpretation": "No failures observed at this sampling resolution; not proof of absolute zero downtime",
+    "probeStopped": true
+  },
+  "installedCommittedTools": {
+    "source": {
+      "host": "vmi3690013",
+      "files": {
+        "contabo-deploy.py": "5c22e94cc015cb78c08a7bf9f3348ec561479ddf2554f0692230076f116e65ff",
+        "item79-backup-export.py": "9c7a7325b77651576236fac451106db5a86c5eca5aa3aba42982612d63c76cee",
+        "item79_release_policy.py": "2f5956402af8178416f5686d125245722b03d5aa896eba3be28760c7b12c8f3d",
+        "item79_web_release.py": "8e62c942abfdd79a12445c2d280d8fc6a294d19f69e6d7737a45539bb74374e7",
+        "item79-backup.py": "62cb200eb978f191b27ded6db3b482e182406aefc4ac08088105fc76060d66d9"
+      }
+    },
+    "offsite": {
+      "host": "vps-ce781f0f",
+      "files": {
+        "item79-monitor.py": "e42bbd5d1aaff5c0f1243820cf5854185ea9eb77a26a1c4507afb3d2cc84cd88",
+        "item79-offsite.py": "06980b463f798d7a22ffbd16adcb271eba40a6fb5b41b67d74cdef696e5cb384"
+      }
+    }
+  },
+  "ui": {
+    "url": "https://postiz.item79.com/launches",
+    "authenticatedCalendarObserved": true,
+    "youtubeChannelsObserved": 3,
+    "accountRecordButtonsObserved": 3,
+    "noPublishingOrAccountMutation": true,
+    "screenshot": {
+      "path": ".runtime/operations/screenshots/production-calendar.jpg",
+      "sha256": "ba395a67112f6a821e264048c0ed7919f22d3e1bef4ba9dfeaa90fe3db148d82",
+      "dimensions": [
+        1889,
+        882
+      ],
+      "storage": "private ignored artifact; not committed"
+    }
+  },
+  "remaining": {
+    "notificationDelivery": "Recipient/provider not configured; real failed-run event queued, no delivery attempted",
+    "restoreScope": "Isolated SQL/Redis restore and exact file hashes proven; cross-store atomic recovery and provider-safe worker restart not proven",
+    "retention": "No pruning; disk reserves and queued capacity alerts; finite storage requires future deliberate capacity/retention decision"
+  }
+}

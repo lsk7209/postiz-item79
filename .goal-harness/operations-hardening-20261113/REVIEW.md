@@ -17,5 +17,13 @@ Explicit remaining boundaries: recipient and working private notification
 configuration absent, so actual alert delivery HOLD. Restores prove artifacts
 can be decrypted/restored, not cross-store atomic recovery or safe restart of
 publishing workers. Retention has reserve/capacity warnings and no deletion;
-without a recipient those warnings remain queued. Successful Actions release
-and final runtime/UI evidence still pending when this review record was written.
+without a recipient those warnings remain queued.
+
+Final primary integration verification: corrected a production startup precondition
+after first deploy safely stopped before mutation. Persisted OAuth Nginx equals
+the running fallback; exact startup/OAuth guard and drift rejection now tested.
+Final34Python+8Node Linux CI tests pass; run43374466169/deployment7758307067 succeed;
+real public web revision/image, original worker/config/data/uploads/containers,
+post-release offsite restore, independent HTTP sampling and authenticated UI checked.
+GitHub-monitor fix received bounded independent re-review with no remaining HIGH.
+Review acceptance does not clear the explicit missing notification destination.

@@ -6,3 +6,5 @@
 - ops/item79_web_release.py: warm web slots and scoped traffic switch, retained worker identity.
 - ops/contabo-deploy.py, .github/workflows/item79.yml: integrate the supported release path.
 - .runtime/operations/: ignored private installation, SSH orchestration, restore scratch/proof and key-recovery handling. Never commit.
+- ops/ITEM79-OPERATIONS.md: host/service schedule, private recipient setup, recovery constraints and rollback procedure.
+- verification.json: sanitized exact runtime/restore/availability/UI evidence; no credentials or screenshot bytes.
