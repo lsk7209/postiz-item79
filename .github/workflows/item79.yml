@@ -49,13 +49,23 @@ jobs:
           set -euo pipefail
           printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
           image="ghcr.io/lsk7209/postiz-item79:$REVISION"
-          docker pull ghcr.io/lsk7209/postiz-item79:buildcache || true
-          docker build -f Dockerfile.item79 --cache-from ghcr.io/lsk7209/postiz-item79:buildcache --build-arg BUILDKIT_INLINE_CACHE=1 --build-arg "ITEM79_REVISION=$REVISION" -t "$image" .
-          docker push "$image"
-          digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$image")
-          echo "image=$digest" >> "$GITHUB_OUTPUT"
-          docker tag "$image" ghcr.io/lsk7209/postiz-item79:buildcache
-          docker push ghcr.io/lsk7209/postiz-item79:buildcache
+          metadata_file=$(mktemp "$RUNNER_TEMP/item79-image.XXXXXX.json")
+          # Stream to the registry instead of importing the rebuilt application
+          # layer into the runner's local Docker image store before pushing it.
+          docker buildx build -f Dockerfile.item79 --provenance=false \
+            --cache-from type=registry,ref=ghcr.io/lsk7209/postiz-item79:buildcache \
+            --cache-to type=inline --build-arg "ITEM79_REVISION=$REVISION" \
+            --metadata-file "$metadata_file" \
+            -t "$image" -t ghcr.io/lsk7209/postiz-item79:buildcache --push .
+          digest=$(jq -er '."containerimage.digest" | select(test("^sha256:[a-f0-9]{64}$"))' "$metadata_file")
+          echo "image=ghcr.io/lsk7209/postiz-item79@$digest" >> "$GITHUB_OUTPUT"
+      - name: Build resource diagnostics
+        if: always()
+        continue-on-error: true
+        run: |
+          df -h /
+          free -h
+          docker system df
   deploy:
     needs: image
     # Enabled only after isolated preview, backup and restricted SSH setup.
