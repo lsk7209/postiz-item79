@@ -6,6 +6,17 @@ OVH `vps-ce781f0f`. Root-owned tools live in `/usr/local/lib/item79`.
 Other projects, mail, DNS, accounts, scheduled posts and existing backups are
 outside these tools' mutation scope. No backup pruning is enabled.
 
+## Local build storage (user direction, 2026-11-15)
+
+Use `E:/codex-build/postiz-item79/` for local tracked-source snapshots, task temp
+files, compiler output and raw verification logs. The canonical source checkout
+stays `D:/program-codex/postiz-item79`; do not move unrelated projects or global
+Docker/WSL data. Task scripts set only their process-local TMPDIR. Existing Linux
+dependencies may be read in place. The current task uses
+`.goal-harness/api-analytics-20261115/local-e-build.sh` and its E: task directory.
+GitHub-hosted VMs cannot directly mount this PC's E: drive; their separate
+disposable storage must independently pass the checked Docker-root disk gate.
+
 ## Backup and independent verification
 
 Contabo `item79-backup.timer` runs daily at 03:15 Asia/Seoul (18:15 UTC).

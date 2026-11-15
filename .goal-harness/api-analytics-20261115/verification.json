@@ -1,0 +1,25 @@
+{
+  "status": "DONE",
+  "publicUrl": "https://postiz.item79.com/analytics",
+  "deployedRevision": "caf8bfa2e72e1be0a0994b62ce7b759cb0167305",
+  "deployedImage": "ghcr.io/lsk7209/postiz-item79@sha256:f57599be83747fc4c7ba88db5b864a847f51598280b6096c563d20e982fdc2f5",
+  "githubRun": "https://github.com/lsk7209/postiz-item79/actions/runs/43684914044",
+  "channels": 3,
+  "periods": [
+    7,
+    30,
+    90
+  ],
+  "exactReportComparisonsPassed": 9,
+  "expiredSavedGrantRefreshVerified": true,
+  "noChannelLoginPerformed": true,
+  "workerUnchanged": true,
+  "protectedConfigUnchanged": true,
+  "sourcePolicySha256": "1301dc80637f0111e4fa5af727ecb6de144911a9e61f3462c026490458407028",
+  "localBuildStorage": "E:\\codex-build\\postiz-item79\\api-analytics-20261115",
+  "localRuntimeBuildPassed": true,
+  "rawVerificationLogSha256": "315d890ef98bae0ccc31fb63c1e9a4ad58c49ad8bdb5d5d97974acaf43cdde16",
+  "runtimeAfterSha256": "2c669ddfeae788a5c01c7fe6583acc324abbce2190d1c0866beedca8b2022279",
+  "visualBrowserInspectionPerformed": false,
+  "ciExportTerminationCause": "unproven; successful run measured 89 GiB free before SDK cleanup, so future cleanup removed; read-only guard retained"
+}

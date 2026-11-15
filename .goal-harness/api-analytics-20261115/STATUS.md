@@ -1,12 +1,16 @@
 # Status
 
-Current State: REPAIRING
-Current Phase: Third export termination143 despite compilation PASS; deploy skipped. Failure Analysis Mode recorded in EVIDENCE.md. Prepare disposable CI disk headroom before another build.
-Completed: Exact host/domain/Google project confirmed; missing Analytics API activated; all three saved grants can refresh and access explicit channel reports. Legacy MINE query can show wrong-channel data; new exact-ID reader fixes it. Node17 PASS; Python34 PASS/1 Windows symlink skip; isolated Linux backend full tsc PASS. Independent read-only actual source review: no blocker/high.
-In Progress: Review scoped ephemeral runner SDK cleanup and24GiB disk gate with before/after resource evidence. No application/Dockerfile/root-policy changes after reviewed source. Reviewed root policy installed with SHA256 1301dc80637f0111e4fa5af727ecb6de144911a9e61f3462c026490458407028 and original policy backup retained.
-Remaining: CI image/frontend build, actual Contabo release, direct report/API comparison and final evidence.
+Current State: DONE
+Current Phase: Actual Contabo release and production API verification complete; final evidence/source checkpoint.
+Completed: Missing Google Analytics service enabled in exact project402500548053; web-only API reader and retry UI deployed as caf8bfa2e72e1be0a0994b62ce7b759cb0167305, image ghcr.io/lsk7209/postiz-item79@sha256:f57599be83747fc4c7ba88db5b864a847f51598280b6096c563d20e982fdc2f5. GitHub43684914044 checks/image/deploy SUCCESS. All3channels x7/30/90 direct exact-ID reports match public API in every daily value; expired-token saved-grant refresh verified. API auth/date/missing-ID boundaries correct. Worker container/image/PID193/restarts0 and all protected config hashes unchanged; live schema/runtime closure/isolated preview/backup passed; old blue remains warm.
+In Progress: None.
+Remaining: None for requested API analytics and local E: build storage.
 Blocked: None.
-Last Verification: 2026-11-15 live service+provider+grant checks, deterministic tests and full backend tsc.
-Next Action: Verify actual image/release and exact-channel reports, plus unchanged worker/protected config hashes.
+Last Verification: 2026-11-15 public revision header,9report comparisons,3saved-grant automatic refreshes, runtime/config equality and E: runtime build.
+Next Action: Use analysis page after reload. Future local builds/temp/logs use E:/codex-build/postiz-item79; retained source D: and global Docker/WSL settings unchanged.
 
-Risk Notice: User requested API analytics without channel login. Change only named project and confirmed Google service. Preserve OAuth clients/grants/billing, account settings, schemas/databases/uploads/queues, original publisher and unrelated resources. Five exact web-only source files plus pinned Dockerfile are deliberately allowed; no worker-shared library source changes. Prior root policy backed up before installation; release retains warm rollback and checks shared runtime closure. No purchase, mail/DNS/Vercel operation.
+Evidence: verification.json; raw logs and storage-receipt.json under E:/codex-build/postiz-item79/api-analytics-20261115. Visual browser inspection not performed (existing browser tool did not connect; no GUI initialized/restarted). Actual API/compiled runtime verified. Other providers retain existing backend implementation; saved authorization can be revoked by owner/provider.
+
+Inference correction: identical row counts were not proof of cross-channel data mixing; earlier single-metric and mixed-metric reports were not directly comparable. Exact-ID binding is explicit scope hardening, not a claim that prior wrong-channel values were measured. Actual root cause of initial empty analytics was proven API service-disabled403.
+
+CI:3export terminations143 preserved in evidence; cause unproven. Successful run had89GiB free BEFORE optional SDK cleanup, so permanent SDK deletion was removed; a read-only24GiB disk gate/direct registry export/resource diagnostics remain. Final checkpoint does not rebuild unchanged application runtime.
