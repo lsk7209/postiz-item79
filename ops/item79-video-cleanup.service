@@ -15,4 +15,3 @@ MemoryMax=512M
 NoNewPrivileges=true
 ProtectHome=true
 PrivateTmp=true
-
