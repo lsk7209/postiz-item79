@@ -39,6 +39,26 @@ jobs:
       image: ${{ steps.image.outputs.image }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Reserve disk for pinned application image
+        env:
+          ITEM79_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: |
+          set -euo pipefail
+          test "$ITEM79_RUNNER_ENVIRONMENT" = github-hosted
+          docker_root=$(docker info --format '{{.DockerRootDir}}')
+          test -n "$docker_root" && test -d "$docker_root"
+          df -h "$docker_root"
+          free -h
+          # These are disposable runner SDKs, never production resources.
+          # The image build uses only Docker, git, Python and jq.
+          for sdk in /usr/local/lib/android /usr/share/dotnet /opt/ghc; do
+            if [ -d "$sdk" ] && [ ! -L "$sdk" ]; then
+              sudo rm -rf --one-file-system -- "$sdk"
+            fi
+          done
+          df -h "$docker_root"
+          available=$(df -B1 --output=avail "$docker_root" | tail -1)
+          test "$available" -ge 25769803776
       - name: Build and publish exact-revision image
         id: image
         env:
@@ -47,6 +67,7 @@ jobs:
           REGISTRY_USER: ${{ github.actor }}
         run: |
           set -euo pipefail
+          trap 'df -h /; free -h' EXIT
           printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
           image="ghcr.io/lsk7209/postiz-item79:$REVISION"
           metadata_file=$(mktemp "$RUNNER_TEMP/item79-image.XXXXXX.json")

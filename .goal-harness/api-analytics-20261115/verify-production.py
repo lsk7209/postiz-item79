@@ -15,9 +15,21 @@ const db=new PrismaClient();
  const ids=['cmweat59e0001o47f4n3hb7x3','cmwef8i230001pd7wcv85jj3i','cmwece9dg0004o47fzk35186s'];
  const rows=await db.integration.findMany({where:{id:{in:ids},providerIdentifier:'youtube',deletedAt:null}});
  if(rows.length!==3)throw Error('Channel inventory changed');
+ let boundaryChecked=false;
  for(const i of rows){
   const org=await db.organization.findUnique({where:{id:i.organizationId}});
   if(!org?.apiKey)throw Error('Existing organization API key unavailable');
+  if(!boundaryChecked){
+   const headers={Authorization:org.apiKey};
+   const noAuth=await fetch(`https://postiz.item79.com/api/public/v1/analytics/${i.id}?date=7`);
+   const invalid=await fetch(`https://postiz.item79.com/api/public/v1/analytics/${i.id}?date=0`,{headers});
+   const missing=await fetch('https://postiz.item79.com/api/public/v1/analytics/not-a-real-channel?date=7',{headers});
+   const privateNoAuth=await fetch(`https://postiz.item79.com/api/analytics/${i.id}?date=7`);
+   const result={boundaryCheck:true,publicWithoutKey:noAuth.status,invalidPeriod:invalid.status,unknownChannel:missing.status,privateWithoutSession:privateNoAuth.status};
+   console.log(JSON.stringify(result));
+   if(noAuth.status!==401||invalid.status!==400||missing.status!==404||privateNoAuth.status!==401)throw Error('API authentication or validation boundary failed');
+   boundaryChecked=true;
+  }
   const client=new google.auth.OAuth2({clientId:process.env.YOUTUBE_CLIENT_ID,clientSecret:process.env.YOUTUBE_CLIENT_SECRET,forceRefreshOnFailure:true});
   // Force a genuinely expired token state; the stored grant must refresh automatically.
   client.setCredentials({access_token:i.token,refresh_token:i.refreshToken,expiry_date:1});
