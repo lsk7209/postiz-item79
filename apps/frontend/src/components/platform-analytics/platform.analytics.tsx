@@ -91,7 +91,7 @@ export const PlatformAnalytics = () => {
     ) {
       arr.push({
         key: 7,
-        value: t('7_days', '7 Days'),
+        value: '7일',
       });
     }
     if (
@@ -111,7 +111,7 @@ export const PlatformAnalytics = () => {
     ) {
       arr.push({
         key: 30,
-        value: t('30_days', '30 Days'),
+        value: '30일',
       });
     }
     if (
@@ -121,7 +121,7 @@ export const PlatformAnalytics = () => {
     ) {
       arr.push({
         key: 90,
-        value: t('90_days', '90 Days'),
+        value: '90일',
       });
     }
     return arr;
@@ -151,21 +151,21 @@ export const PlatformAnalytics = () => {
           <img src="/peoplemarketplace.svg" />
         </div>
         <div className="text-[48px]">
-          {t('can_t_show_analytics_yet', "Can't show analytics yet")}
+          {t('can_t_show_analytics_yet', '아직 분석할 채널이 없습니다')}
           <br />
           {t(
             'you_have_to_add_social_media_channels',
-            'You have to add Social Media channels'
+            '캘린더에서 채널을 연결하면 통계를 확인할 수 있습니다'
           )}
         </div>
         <div className="text-[20px]">
-          {t('supported', 'Supported:')}
+          {t('supported', '지원 채널: ')}
           {allowedIntegrations.map((p) => capitalize(p)).join(', ')}
         </div>
         <Button onClick={() => router.push('/launches')}>
           {t(
             'go_to_the_calendar_to_add_channels',
-            'Go to the calendar to add channels'
+            '캘린더에서 채널 연결'
           )}
         </Button>
       </div>
@@ -182,11 +182,14 @@ export const PlatformAnalytics = () => {
         <div className="flex gap-[12px] flex-col">
           <div className="flex items-center mobile:hidden">
             <h2 className="group-[.sidebar]:hidden flex-1 text-[20px] font-[500]">
-              {t('channels')}
+              {t('channels', '채널')}
             </h2>
-            <div
+            <button
+              type="button"
+              aria-label={collapseMenu === '1' ? '채널 목록 펼치기' : '채널 목록 접기'}
+              aria-expanded={collapseMenu !== '1'}
               onClick={() => setCollapseMenu(collapseMenu === '1' ? '0' : '1')}
-              className="group-[.sidebar]:rotate-[180deg] group-[.sidebar]:mx-auto text-btnText bg-btnSimple rounded-[6px] w-[24px] h-[24px] flex items-center justify-center cursor-pointer select-none"
+              className="group-[.sidebar]:rotate-[180deg] group-[.sidebar]:mx-auto text-btnText bg-btnSimple rounded-lg min-w-11 min-h-11 flex items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -203,11 +206,14 @@ export const PlatformAnalytics = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-            </div>
+            </button>
           </div>
           <div className="flex gap-[15px] mobile:gap-[12px] flex-col mobile:flex-row mobile:overflow-x-auto mobile:ps-[12px] mobile:pt-[6px] mobile:pb-[6px] scrollbar scrollbar-thumb-fifth scrollbar-track-newBgColor">
             {sortedIntegrations.map((integration, index) => (
-              <div
+              <button
+                type="button"
+                aria-label={integration.name + ' 통계 보기'}
+                aria-pressed={currentIntegration.id === integration.id}
                 key={integration.id}
                 onClick={() => {
                   setRefresh(true);
@@ -217,9 +223,8 @@ export const PlatformAnalytics = () => {
                   setCurrent(index);
                 }}
                 className={clsx(
-                  'flex gap-[12px] items-center group/profile justify-center hover:bg-boxHover rounded-e-[8px] mobile:shrink-0',
-                  currentIntegration.id !== integration.id &&
-                    'opacity-20 hover:opacity-100 cursor-pointer'
+                  'flex min-h-12 min-w-0 gap-3 items-center group/profile justify-center rounded-lg p-2 text-left text-newTableText hover:bg-boxHover mobile:shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                  currentIntegration.id === integration.id && 'bg-newTableHeader ring-1 ring-newTableBorder'
                 )}
               >
                 <div
@@ -258,24 +263,28 @@ export const PlatformAnalytics = () => {
                 </div>
                 <div
                   className={clsx(
-                    'flex-1 whitespace-nowrap text-ellipsis overflow-hidden group-[.sidebar]:hidden mobile:hidden',
+                    'flex-1 min-w-0 whitespace-nowrap text-ellipsis overflow-hidden group-[.sidebar]:hidden mobile:hidden',
                     integration.disabled && 'opacity-50'
                   )}
                 >
                   {integration.name}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
       </div>
-      <div className="bg-newBgColorInner flex-1 flex-col flex p-[20px] mobile:p-[12px] gap-[12px]">
+      <div className="bg-newBgColorInner min-w-0 flex-1 flex-col flex p-6 mobile:p-4 gap-6">
         {!!options.length && (
-          <div className="flex-1 flex flex-col gap-[14px]">
-            <div className="max-w-[200px]">
+          <div className="flex-1 min-w-0 flex flex-col gap-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-newTableBorder pb-5">
+              <div className="min-w-0"><h2 className="break-words text-xl font-semibold text-newTableText">{currentIntegration?.name}</h2><p className="mt-1 text-sm text-newTableText">채널별 성과를 한눈에 확인하세요.</p></div>
+              <div className="w-40 shrink-0">
               <Select
-                label=""
+                label="분석 기간"
+                aria-label="분석 기간"
                 name="date"
+                value={keys}
                 disableForm={true}
                 hideErrors={true}
                 onChange={(e) => setKey(+e.target.value)}
@@ -286,8 +295,9 @@ export const PlatformAnalytics = () => {
                   </option>
                 ))}
               </Select>
+              </div>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {!!keys && !!currentIntegration && !refresh && (
                 <RenderAnalytics integration={currentIntegration} date={keys} />
               )}
