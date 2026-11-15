@@ -65,6 +65,11 @@ test('an all-zero valid series draws a zero chart rather than a missing-data sta
   lastChart=null;api.ViewsChart({rows:[{date:'2026-11-01',views:0}]});assert.ok(lastChart);assert.equal(lastChart.data.datasets[0].data[0],0);
   lastChart=null;api.ViewsChart({rows:[{date:'2026-11-01',views:null}]});assert.equal(lastChart,null);
 });
+test('tooltip does not turn a missing numeric value into zero',()=>{
+  api.ViewsChart({rows:[{date:'2026-11-01',views:1}]});
+  const label=lastChart.options.plugins.tooltip.callbacks.label;
+  assert.equal(label({parsed:{y:null}}),'조회수 —');assert.equal(label({parsed:{y:0}}),'조회수 0회');
+});
 test('both frontend sources parse without JSX syntax diagnostics',()=>{
   for(const name of ['render.analytics.tsx','platform.analytics.tsx']){
     const result=ts.transpileModule(readFileSync(new URL('../apps/frontend/src/components/platform-analytics/'+name,import.meta.url),'utf8'),{reportDiagnostics:true,compilerOptions:{jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}});

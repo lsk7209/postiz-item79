@@ -29,6 +29,14 @@ const allowedIntegrations = [
   'threads',
   'x',
 ];
+export async function loadAnalyticsChannels(fetcher: (url: string) => Promise<Response>, disableXAnalytics: boolean) {
+  const response = await fetcher('/integrations/list');
+  if (!response.ok) throw new Error('채널 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+  const body = await response.json();
+  if (!Array.isArray(body.integrations)) throw new Error('채널 목록 응답을 확인할 수 없습니다.');
+  return body.integrations.filter((item: {identifier: string}) =>
+    allowedIntegrations.includes(item.identifier) && !(item.identifier === 'x' && disableXAnalytics));
+}
 export const PlatformAnalytics = () => {
   const fetch = useFetch();
   const t = useT();
@@ -39,18 +47,9 @@ export const PlatformAnalytics = () => {
   const [key, setKey] = useState(7);
   const [refresh, setRefresh] = useState(false);
   const [collapseMenu, setCollapseMenu] = useCookie('collapseMenu', '0');
-  const load = useCallback(async () => {
-    const int = (
-      await (await fetch('/integrations/list')).json()
-    ).integrations.filter((f: any) => {
-      if (f.identifier === 'x' && disableXAnalytics) {
-        return false;
-      }
-      return true;
-    });
-    return int.filter((f: any) => allowedIntegrations.includes(f.identifier));
-  }, []);
-  const { data, isLoading } = useSWR('analytics-list', load, {
+  const load = useCallback(() => loadAnalyticsChannels(fetch, disableXAnalytics), [fetch, disableXAnalytics]);
+  const { data, isLoading, error, isValidating, mutate } = useSWR('analytics-list', load, {
+    errorRetryCount: 1,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     revalidateIfStale: false,
@@ -142,6 +141,17 @@ export const PlatformAnalytics = () => {
         <LoadingComponent />
       </div>
     );
+  }
+
+  if (error) {
+    return <section role="alert" className="flex min-w-0 flex-1 flex-col items-start justify-center gap-4 bg-newBgColorInner p-6 text-newTableText">
+      <h2 className="text-xl font-semibold">채널 목록을 불러오지 못했습니다</h2>
+      <p className="text-sm leading-6">네트워크 연결을 확인한 뒤 다시 시도해 주세요.</p>
+      <button type="button" disabled={isValidating} onClick={() => {void mutate().catch(() => undefined);}}
+        className="min-h-11 rounded-lg border border-newTableBorder bg-newTableHeader px-4 text-sm font-medium hover:bg-boxHover focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60">
+        {isValidating ? '불러오는 중…' : '채널 목록 다시 불러오기'}
+      </button>
+    </section>;
   }
 
   if (!sortedIntegrations.length && !isLoading) {

@@ -133,7 +133,7 @@ export const ViewsChart: FC<{rows: ReturnType<typeof buildAnalyticsReport>['rows
         },
         plugins: {
           legend: {display: false},
-          tooltip: {displayColors: false, callbacks: {label: context => '조회수 ' + formatCount(Number(context.parsed.y), '회')}},
+          tooltip: {displayColors: false, callbacks: {label: context => '조회수 ' + formatCount(numeric(context.parsed.y), '회')}},
         },
       },
     });
