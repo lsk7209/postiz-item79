@@ -1,0 +1,39 @@
+{
+  "state": "DONE",
+  "verifiedAt": "2026-11-15T08:23:41.402067+00:00",
+  "taskName": "Item79-PublishedVideo-Cleanup",
+  "enabled": true,
+  "lastTaskResult": 0,
+  "lastRunKst": "2026-11-15T17:23:34+09:00",
+  "nextRunKst": "2026-11-16T05:10:00+09:00",
+  "schedule": "daily05:10KST,StartWhenAvailable,current-userInteractive,networkrequired",
+  "gateSha256": "e76d8c50b4978df965c7245c40ae8d1cd96e0bebe6e2abffc17431d7280cdc58",
+  "runnerSha256": "306ed2a2f1f9ce01a8391dc64aad9ae2e59c95c11dca87f3fb19ee02db082bff",
+  "localMapSha256": "c691d0fc05bc7167eae316d8f4cfeb82f33580ef85c1920f7e2d3ee74d80d68b",
+  "localCopiesEnrolled": 58,
+  "postizMapped": 45,
+  "nativeOnlyProtected": 13,
+  "focusedTests": 18,
+  "liveApply": {
+    "eligible": 0,
+    "serverDeleted": 0,
+    "localDeleted": 0,
+    "protected": 70,
+    "failures": 0
+  },
+  "independentRecoveryReadback": {
+    "fresh": true,
+    "pinnedRetry": true,
+    "bytes": 2340062
+  },
+  "worker": {
+    "pid": 193,
+    "containerRestarts": 0,
+    "pm2Restarts": 0,
+    "status": "online",
+    "protectedConfigHashesUnchanged": true
+  },
+  "appRevisionUnchanged": "964047ae588949996a63559254f47d1347ebaae7",
+  "rollback": "Disable-ScheduledTask -TaskName Item79-PublishedVideo-Cleanup",
+  "productionFileDeletionObserved": false
+}
