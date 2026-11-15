@@ -4,6 +4,7 @@ import { GetOrgFromRequest } from '@gitroom/nestjs-libraries/user/org.from.reque
 import { ApiTags } from '@nestjs/swagger';
 import { IntegrationService } from '@gitroom/nestjs-libraries/database/prisma/integrations/integration.service';
 import { PostsService } from '@gitroom/nestjs-libraries/database/prisma/posts/posts.service';
+import { readChannelAnalytics } from './channel-analytics';
 
 @ApiTags('Analytics')
 @Controller('/analytics')
@@ -19,7 +20,7 @@ export class AnalyticsController {
     @Param('integration') integration: string,
     @Query('date') date: string
   ) {
-    return this._integrationService.checkAnalytics(org, integration, date);
+    return readChannelAnalytics(this._integrationService, org, integration, date);
   }
 
   @Get('/post/:postId')

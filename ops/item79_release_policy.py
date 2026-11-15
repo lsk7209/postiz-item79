@@ -6,12 +6,18 @@ from pathlib import Path, PurePosixPath
 import subprocess
 
 BASELINE = '2c951cf3b67520ad449bb7d5a9d850518dbf3a89'
-VERSION = 'item79-web-v1'
-DOCKERFILE_SHA256 = 'edf8b0e858282146eb7bf7ecf0d979c004163c2b87a9040fd3557e02dcb832a5'
+VERSION = 'item79-web-v2-channel-analytics'
+DOCKERFILE_SHA256 = 'd5bc042db036a92c2ea2950bc77d59c70b4de3a77b6df105b32071b9dcc4bddc'
 FRONTEND = {
     'apps/frontend/src/components/launches/launches.component.tsx',
     'apps/frontend/src/components/launches/channel-account-label.tsx',
     'apps/frontend/src/components/launches/settings.modal.tsx',
+    'apps/frontend/src/components/platform-analytics/render.analytics.tsx',
+    'apps/frontend/src/components/platform-analytics/platform.analytics.tsx',
+    'apps/backend/src/api/routes/channel-analytics.ts',
+    'apps/backend/src/api/routes/analytics.controller.ts',
+    'apps/backend/src/public-api/routes/v1/public.integrations.controller.ts',
+    'Dockerfile.item79',
 }
 
 

@@ -7,6 +7,11 @@ COPY apps/frontend/src/components/launches/settings.modal.tsx /app/apps/frontend
 COPY apps/backend/src/api/routes/integrations.controller.ts /app/apps/backend/src/api/routes/integrations.controller.ts
 COPY libraries/nestjs-libraries/src/database/prisma/integrations/integration.repository.ts /app/libraries/nestjs-libraries/src/database/prisma/integrations/integration.repository.ts
 COPY libraries/nestjs-libraries/src/database/prisma/integrations/integration.service.ts /app/libraries/nestjs-libraries/src/database/prisma/integrations/integration.service.ts
+COPY apps/backend/src/api/routes/channel-analytics.ts /app/apps/backend/src/api/routes/channel-analytics.ts
+COPY apps/backend/src/api/routes/analytics.controller.ts /app/apps/backend/src/api/routes/analytics.controller.ts
+COPY apps/backend/src/public-api/routes/v1/public.integrations.controller.ts /app/apps/backend/src/public-api/routes/v1/public.integrations.controller.ts
+COPY apps/frontend/src/components/platform-analytics/render.analytics.tsx /app/apps/frontend/src/components/platform-analytics/render.analytics.tsx
+COPY apps/frontend/src/components/platform-analytics/platform.analytics.tsx /app/apps/frontend/src/components/platform-analytics/platform.analytics.tsx
 RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter ./apps/backend run build && NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter ./apps/frontend run build
 ARG ITEM79_REVISION=development
 LABEL org.opencontainers.image.source="https://github.com/lsk7209/postiz-item79"

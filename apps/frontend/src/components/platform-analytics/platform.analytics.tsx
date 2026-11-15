@@ -11,7 +11,6 @@ import { RenderAnalytics } from '@gitroom/frontend/components/platform-analytics
 import { Select } from '@gitroom/react/form/select';
 import { Button } from '@gitroom/react/form/button';
 import { useRouter } from 'next/navigation';
-import { useToaster } from '@gitroom/react/toaster/toaster';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { useVariables } from '@gitroom/react/helpers/variable.context';
 import useCookie from 'react-use-cookie';
@@ -40,7 +39,6 @@ export const PlatformAnalytics = () => {
   const [key, setKey] = useState(7);
   const [refresh, setRefresh] = useState(false);
   const [collapseMenu, setCollapseMenu] = useCookie('collapseMenu', '0');
-  const toaster = useToaster();
   const load = useCallback(async () => {
     const int = (
       await (await fetch('/integrations/list')).json()
@@ -212,13 +210,6 @@ export const PlatformAnalytics = () => {
               <div
                 key={integration.id}
                 onClick={() => {
-                  if (integration.refreshNeeded) {
-                    toaster.show(
-                      'Please refresh the integration from the calendar',
-                      'warning'
-                    );
-                    return;
-                  }
                   setRefresh(true);
                   setTimeout(() => {
                     setRefresh(false);

@@ -1,3 +1,7 @@
+# API analytics without repeated channel login — 2026-11-15
+
+Current task: VERIFYING_RELEASE. Evidence: `.goal-harness/api-analytics-20261115/STATUS.md` and `EVIDENCE.md`. Exact Google project postiz-item79/402500548053 was missing youtubeanalytics.googleapis.com; enabled using existing management auth. All3 saved channel grants refresh successfully without login. Existing MINE query can return wrong-channel reports; new web-only reader binds exact organization/channel/date and safe API errors, with API-only retry/no-data UI. No shared worker source or schema/dependency changes. Node17PASS, Python34PASS/1Windows symlink skip, isolated backend full tscPASS; independent actual diff review no blocker/high. Reviewed exact web/Dockerfile policy installed with prior root policy backup. CI/Contabo deployment and exact-channel public verification remain pending. Original publishing worker, queues, uploads, credentials, prior backups and unrelated dirty stop files preserved.
+
 # Backup and warm release verified; notification recipient pending — 2026-11-13
 
 Current state: WAITING_FOR_NOTIFICATION_DESTINATION. Canonical task evidence: `.goal-harness/operations-hardening-20261113/STATUS.md` and `verification.json`; recovery/operating guide: `ops/ITEM79-OPERATIONS.md`. Backup and release follow-ups are verified. Actual alert delivery is incomplete because the intended channel/recipient and private provider configuration are missing; the async question remains unanswered. Do not infer a recipient or report all three follow-ups complete.

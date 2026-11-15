@@ -66,6 +66,18 @@ Availability and deployment-failure monitoring runs on OVH; actual message deliv
 is still waiting for the user's recipient/provider configuration. No alert has been
 sent. This workflow does not upload or publish videos.
 
+## Channel analytics (2026-11-15)
+
+The web/API reader uses the saved exact YouTube channel ID, not Google's MINE
+alias. Existing saved grants refresh server-side without opening a channel login.
+Analytics API was enabled in the confirmed postiz-item79 Google project. No-data
+and provider errors offer API retry; revoked grants still require owner consent.
+Other providers keep their existing backend reader. Organization login/API-key
+authentication remains required. The source release has an exact-file web-only
+exception and reviewed Dockerfile pin; shared worker-runtime fingerprint, schema,
+backup and warm rollback guards remain active. See task harness for actual
+deployment/verification status; source configuration is not deployment proof.
+
 ## Source license
 
 This fork retains upstream AGPL-3.0 licensing. Corresponding customized source is

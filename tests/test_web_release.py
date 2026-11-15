@@ -27,10 +27,20 @@ def route(target='http://postiz-center-app:5000'):
 
 class WebReleaseTest(unittest.TestCase):
     def test_policy_rejects_retained_worker_and_dependency_changes(self):
-        for path in ['apps/orchestrator/src/main.ts', 'libraries/nestjs-libraries/src/temporal/temporal.module.ts', 'package.json', 'pnpm-lock.yaml', 'Dockerfile.item79', 'apps/backend/src/api/routes/posts.controller.ts', '../ops/escape.py']:
+        for path in ['apps/orchestrator/src/main.ts', 'libraries/nestjs-libraries/src/temporal/temporal.module.ts', 'package.json', 'pnpm-lock.yaml', 'apps/backend/src/api/routes/posts.controller.ts', '../ops/escape.py']:
             with self.assertRaises(RuntimeError):
                 policy.validate({'sourcePolicy': policy.VERSION, 'dockerfileSha256': policy.DOCKERFILE_SHA256, 'changedPaths': [path]})
         policy.validate({'sourcePolicy': policy.VERSION, 'dockerfileSha256': policy.DOCKERFILE_SHA256, 'changedPaths': ['ops/item79_web_release.py', 'PROJECT_STATE.md']})
+
+    def test_analytics_web_only_exception_keeps_exact_dockerfile_pin(self):
+        import hashlib
+        self.assertEqual(hashlib.sha256((Path(__file__).parents[1]/'Dockerfile.item79').read_bytes()).hexdigest(), policy.DOCKERFILE_SHA256)
+        paths = ['apps/backend/src/api/routes/channel-analytics.ts', 'apps/backend/src/api/routes/analytics.controller.ts', 'apps/backend/src/public-api/routes/v1/public.integrations.controller.ts', 'apps/frontend/src/components/platform-analytics/render.analytics.tsx', 'apps/frontend/src/components/platform-analytics/platform.analytics.tsx', 'Dockerfile.item79']
+        policy.validate({'sourcePolicy': policy.VERSION, 'dockerfileSha256': policy.DOCKERFILE_SHA256, 'changedPaths': paths})
+        with self.assertRaises(RuntimeError):
+            policy.validate({'sourcePolicy': policy.VERSION, 'dockerfileSha256': '0'*64, 'changedPaths': paths})
+        for path in paths[:-1]:
+            self.assertIn(('COPY ' + path + ' /app/' + path), (Path(__file__).parents[1]/'Dockerfile.item79').read_text())
 
     def test_route_guard_rejects_unrelated_service(self):
         valid = route()

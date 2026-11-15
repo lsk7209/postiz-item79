@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useMemo } from 'react';
 import { Integration } from '@prisma/client';
 import useSWR from 'swr';
 import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
@@ -10,6 +10,7 @@ interface AnalyticsDataItem {
   label: string;
   data: Array<{ total: number; date: string }>;
   average?: boolean;
+  unit?: 'count' | 'minutes' | 'seconds' | 'percent';
   percentageChange?: number;
 }
 
@@ -121,7 +122,7 @@ const AnalyticsCard: FC<{
   );
 };
 
-const EmptyState: FC<{ onRefresh: () => void }> = ({ onRefresh }) => {
+const EmptyState: FC<{ onRefresh: () => void; message?: string }> = ({ onRefresh, message }) => {
   const t = useT();
 
   return (
@@ -141,10 +142,7 @@ const EmptyState: FC<{ onRefresh: () => void }> = ({ onRefresh }) => {
         </svg>
       </div>
       <p className="text-[15px] text-newTableText text-center mb-[12px]">
-        {t(
-          'this_channel_needs_to_be_refreshed',
-          'This channel needs to be refreshed to display analytics'
-        )}
+        {message || t('channel_analytics_no_data', '선택한 채널과 기간의 분석 데이터가 아직 없습니다.')}
       </p>
       <button
         onClick={onRefresh}
@@ -161,7 +159,7 @@ const EmptyState: FC<{ onRefresh: () => void }> = ({ onRefresh }) => {
           <path d="M23 4v6h-6M1 20v-6h6" />
           <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
         </svg>
-        {t('refresh_channel', 'Refresh Channel')}
+        {t('retry_channel_analytics', 'API로 다시 조회')}
       </button>
     </div>
   );
@@ -172,19 +170,18 @@ export const RenderAnalytics: FC<{
   date: number;
 }> = (props) => {
   const { integration, date } = props;
-  const [loading, setLoading] = useState(true);
   const fetch = useFetch();
 
   const load = useCallback(async () => {
-    setLoading(true);
-    const load = (
-      await fetch(`/analytics/${integration.id}?date=${date}`)
-    ).json();
-    setLoading(false);
-    return load;
+    const response = await fetch(`/analytics/${integration.id}?date=${date}`);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || '분석 API 조회에 실패했습니다. 잠시 후 다시 조회해 주세요.');
+    if (!Array.isArray(result)) throw new Error('분석 API 응답을 확인할 수 없습니다.');
+    return result as AnalyticsDataItem[];
   }, [integration, date]);
 
-  const { data } = useSWR(`/analytics-${integration?.id}-${date}`, load, {
+  const { data, error, isLoading, mutate } = useSWR(`/analytics-${integration?.id}-${date}`, load, {
+    shouldRetryOnError: false,
     refreshInterval: 0,
     refreshWhenHidden: false,
     revalidateOnFocus: false,
@@ -194,41 +191,19 @@ export const RenderAnalytics: FC<{
     revalidateOnMount: true,
   });
 
-  const refreshChannel = useCallback(
-    (
-        integrationData: Integration & {
-          identifier: string;
-        }
-      ) =>
-      async () => {
-        const { url } = await (
-          await fetch(
-            `/integrations/social/${integrationData.identifier}?refresh=${integrationData.internalId}`,
-            {
-              method: 'GET',
-            }
-          )
-        ).json();
-        window.location.href = url;
-      },
-    []
-  );
-
-  const t = useT();
-
   const totals = useMemo(() => {
     return data?.map((p: AnalyticsDataItem) => {
       const value =
         (p?.data.reduce((acc: number, curr: { total: number }) => acc + curr.total, 0) || 0) /
-        (p.average ? p.data.length : 1);
+        (p.average ? Math.max(p.data.length, 1) : 1);
       if (p.average) {
-        return value.toFixed(2) + '%';
+        return value.toFixed(2) + (p.unit === 'seconds' ? ' s' : '%');
       }
       return new Intl.NumberFormat().format(Math.round(value));
     });
   }, [data]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-[48px]">
         <LoadingComponent />
@@ -238,10 +213,10 @@ export const RenderAnalytics: FC<{
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]">
-      {data?.length === 0 && (
-        <EmptyState onRefresh={refreshChannel(integration as any)} />
+      {(error || data?.length === 0) && (
+        <EmptyState message={error?.message} onRefresh={() => { void mutate().catch(() => undefined); }} />
       )}
-      {data?.map((item: AnalyticsDataItem, index: number) => (
+      {!error && data?.map((item: AnalyticsDataItem, index: number) => (
         <AnalyticsCard
           key={`analytics-${index}`}
           item={item}

@@ -59,6 +59,7 @@ import { GetOrgActivityDto } from '@gitroom/nestjs-libraries/dtos/analytics/get.
 import { ResetCreditsDto } from '@gitroom/nestjs-libraries/dtos/billing/reset.credits.dto';
 import { SubscriptionService } from '@gitroom/nestjs-libraries/database/prisma/subscriptions/subscription.service';
 import dayjs from 'dayjs';
+import { readChannelAnalytics } from '@gitroom/backend/api/routes/channel-analytics';
 
 @ApiTags('Public API')
 @Controller('/public/v1')
@@ -666,7 +667,7 @@ export class PublicIntegrationsController {
     @Query('date') date: string
   ) {
     Sentry.metrics.count('public_api-request', 1);
-    return this._integrationService.checkAnalytics(org, integration, date);
+    return readChannelAnalytics(this._integrationService, org, integration, date);
   }
 
   @Get('/analytics/post/:postId')

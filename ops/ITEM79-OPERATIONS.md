@@ -113,7 +113,12 @@ container/PID/restart counts and selected Temporal task-queue poller identities
 queue). The process identity proves the release did not replace the worker;
 these sentinel checks do not prove comprehensive queue health.
 The CI/source policy rejects changes to the pinned Dockerfile/base image,
-backend/shared worker contracts, schema, packages or lockfile. Unsupported
+shared worker contracts, schema, packages or lockfile. The reviewed 2026-11-15
+analytics exception permits only five enumerated backend/frontend web files and
+the exact pinned Dockerfile overlay; libraries and worker bytes remain protected.
+The prior root policy is preserved beside the installed file as
+`item79_release_policy.pre-analytics-1794721858090120926.py.bak`.
+Unsupported
 changes require deliberate compatibility/migration review and root policy
 installation; do not weaken the allowlist just to make a release pass.
 
