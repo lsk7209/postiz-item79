@@ -14,8 +14,8 @@ import uuid
 
 ROOT = Path('E:/codex-build/postiz-item79/video-cleanup')
 GATE_SHA256 = 'e76d8c50b4978df965c7245c40ae8d1cd96e0bebe6e2abffc17431d7280cdc58'
-CONTABO = ['ssh', '-i', 'C:/Users/dlatj/.ssh/im-cloud-contabo-admin', '-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15', '-o', 'UserKnownHostsFile=D:/server-contabo/connection-20261028/known_hosts', 'imadmin@13.140.77.84']
-OVH = ['ssh', '-i', 'C:/Users/dlatj/.ssh/ovh_pc2_ed25519', '-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15', '-o', 'UserKnownHostsFile=D:/server-ovhcloud/OVH-OtherPC-Start-20261028/known_hosts.ovh', 'ubuntu@51.79.206.71']
+CONTABO = ['ssh', '-i', str(ROOT / 'keys/contabo-reader'), '-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15', '-o', 'UserKnownHostsFile=D:/server-contabo/connection-20261028/known_hosts', 'item79-cleanup-reader@13.140.77.84']
+OVH = ['ssh', '-i', str(ROOT / 'keys/ovh-verifier'), '-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15', '-o', 'UserKnownHostsFile=D:/server-ovhcloud/OVH-OtherPC-Start-20261028/known_hosts.ovh', 'item79-cleanup-verifier@51.79.206.71']
 SERVER = r'''
 import base64,json,subprocess
 from pathlib import Path
@@ -61,7 +61,14 @@ with __import__('tempfile').TemporaryFile() as errors:
   while chunk:=child.stdout.read(1048576):digest.update(chunk);size+=len(chunk)
   assert child.wait()==0
 assert digest.hexdigest()==q['sha256'] and size==q['bytes'],'Recovery readback mismatch'
-print(json.dumps({'restoredAndHashed':True,'sha256':digest.hexdigest(),'bytes':size,'snapshot':snapshot,'sourceSnapshot':latest['snapshot'],'verifiedAt':now.isoformat()}))
+print(json.dumps({'restoredAndHashed':True,'sha256':digest.hexdigest(),'bytes':size,'snapshot':snapshot,'sourceSnapshot':latest['snapshot'],'manifestSha256':latest['manifestSha256'],'verifiedAt':now.isoformat()}))
+'''
+EXPORT = r'''
+import socket,subprocess
+assert socket.gethostname()=='vmi3690013'
+result=subprocess.run(['python3','/usr/local/lib/item79/item79-server-video-cleanup.py','--export'],capture_output=True,timeout=210)
+assert result.returncode==0,'Server receipts unavailable'
+print(result.stdout.decode())
 '''
 
 def utc():
@@ -79,9 +86,14 @@ def atomic(path, value):
 
 
 def remote(ssh, source, data):
-    encoded = base64.b64encode(json.dumps(data).encode()).decode()
-    source = source.replace('INPUT', encoded).replace('GATE_PIN', GATE_SHA256)
-    result = subprocess.run(ssh + ['sudo -n python3 -c ' + shlex.quote(source)], capture_output=True, timeout=240)
+    if ssh == CONTABO:
+        if source == EXPORT:
+            data = {'mode': 'export'}
+        elif source != SERVER or data.get('mode') not in ['receipt', 'local-check']:
+            raise RuntimeError('PC transport forbids server mutation')
+    elif ssh != OVH or source != VERIFY:
+        raise RuntimeError('Unknown restricted transport')
+    result = subprocess.run(ssh + ['verify' if ssh == OVH else 'read'], input=json.dumps(data).encode(), capture_output=True, timeout=240)
     if result.returncode:
         raise RuntimeError('Remote verification failed closed')
     return json.loads(result.stdout)
@@ -134,6 +146,12 @@ def clean_local(mapping, candidate, intent, journal):
     for entry in local_candidates(mapping, candidate):
         if any(item.get('localAssetId') == entry['localAssetId'] for item in completed):
             continue
+        if intent.get('localPending') == entry['localAssetId'] and not Path(entry['resolvedPath']).exists():
+            # Acknowledge absence after a durable intent without claiming who removed bytes.
+            completed.append({'path': entry['resolvedPath'], 'state': 'REMOVED_UNCONFIRMED', 'localAssetId': entry['localAssetId'],
+                              'bytes': 0, 'expectedBytes': candidate['bytes']})
+            intent.pop('localPending', None); atomic(journal, intent)
+            continue
         intent['localPending'] = entry['localAssetId']; atomic(journal, intent)
         result = delete_local(entry, candidate) | {'localAssetId': entry['localAssetId']}
         completed.append(result); intent.pop('localPending', None); atomic(journal, intent)
@@ -173,7 +191,58 @@ def run(apply=False):
     with (ROOT / 'run.lock').open('a+b') as lock:
         lock.seek(0); lock.write(b'0'); lock.flush(); lock.seek(0)
         msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
-        return execute(apply)
+        return execute_local_only(apply)
+
+
+def execute_local_only(apply):
+    """PC task consumes acknowledged server removals; it never requests server unlink."""
+    report = {'startedAt': utc(), 'mode': 'LOCAL_ONLY_APPLY' if apply else 'LOCAL_ONLY_AUDIT',
+              'state': 'RUNNING', 'serverRemoved': [], 'localRemoved': [], 'failures': [], 'eligibleCount': 0,
+              'protectedCounts': {}, 'localUnconfirmed': []}
+    atomic(ROOT / 'latest.json', report)
+    exported = remote(CONTABO, EXPORT, {})
+    observed = exported['observed']
+    mapping = json.loads((ROOT / 'local-map.json').read_text())
+    for server_intent in exported['receipts']:
+        candidate = server_intent['candidate']
+        if not local_candidates(mapping, candidate):
+            continue
+        operation = server_intent['operationId']
+        if not __import__('re').fullmatch('[a-f0-9]{32}', operation):
+            raise RuntimeError('Invalid server operation identity')
+        journal = ROOT / 'pc-receipts' / (operation + '.json')
+        selected = local_candidates(mapping, candidate)
+        intent = json.loads(journal.read_text()) if journal.exists() else {
+            'state': 'LOCAL_PENDING', 'operationId': operation, 'candidate': candidate, 'recovery': server_intent['recovery'],
+            'selectedLocal': selected}
+        if intent['candidate'] != candidate or intent['recovery'] != server_intent['recovery']:
+            raise RuntimeError('Server receipt changed')
+        if intent['state'] in ['COMPLETED', 'COMPLETED_WITH_UNCONFIRMED']:
+            continue
+        report['eligibleCount'] += 1
+        try:
+            ack = remote(CONTABO, SERVER, {'mode': 'receipt', 'operationId': operation})
+            if (ack.get('state') != 'REMOVED' or ack.get('operationId') != operation or
+                    ack.get('expected') != candidate or ack.get('recovery') != server_intent['recovery']):
+                raise RuntimeError('Server removal not acknowledged')
+            proof = remote(OVH, VERIFY, candidate | {'recovery': intent['recovery']})
+            if proof.get('restoredAndHashed') is not True or proof.get('sha256') != candidate['sha256'] or proof.get('bytes') != candidate['bytes']:
+                raise RuntimeError('Recovery content differs')
+            check = remote(CONTABO, SERVER, {'mode': 'local-check', 'operationId': operation})
+            if not check.get('permitted'):
+                raise RuntimeError('References or public status changed')
+            if apply:
+                atomic(journal, intent)
+                local = clean_local(intent['selectedLocal'], candidate, intent, journal)
+                report['localRemoved'].extend(item for item in local if item['state'] == 'REMOVED')
+                report['localUnconfirmed'].extend(item for item in local if item['state'] == 'REMOVED_UNCONFIRMED')
+                intent.update(state='COMPLETED_WITH_UNCONFIRMED' if any(item['state'] == 'REMOVED_UNCONFIRMED' for item in local) else 'COMPLETED', verifiedAt=utc()); atomic(journal, intent)
+        except Exception as error:
+            report['failures'].append({'sha256': candidate['sha256'], 'errorType': type(error).__name__})
+    report.update(state='COMPLETED' if not report['failures'] else 'PARTIAL_REQUIRES_RECONCILIATION', completedAt=utc())
+    atomic(ROOT / 'latest.json', report)
+    atomic(ROOT / 'runs' / (dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '.json'), report)
+    return {key: report[key] for key in ['state', 'eligibleCount', 'protectedCounts']} | {'serverRemoved': 0, 'localRemoved': len(report['localRemoved'])}
 
 
 def execute(apply):
@@ -250,6 +319,7 @@ def execute(apply):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--apply', action='store_true')
+    parser.add_argument('--local-only', action='store_true', help='PC cleanup is always local-only; server runs independently')
     arguments = parser.parse_args()
     try:
         summary = run(arguments.apply)

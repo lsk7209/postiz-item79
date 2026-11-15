@@ -1,0 +1,11 @@
+# EVIDENCE
+
+Old Windows writer disabled before installation; no active old intents or quarantines. Observation timestamps seeded to server without resetting7day protection. Private key generated on Contabo remains there; PC has separate restricted reader/verifier keys. Root authkeys/sudo noargs helpers permit bounded JSON only; no admin key is referenced by PC task.
+
+Initial review found unpinned offsite helper/config chain, stale reconciled candidate, unguarded quarantine residue and PC unlink-ack gap. All repaired;29focused tests pass. Installer short username comparison initially failed closed, fixed by SID comparison; task remained disabled. Real source/backup deployment lock and run lock contention rejected; deployment/backup resources not changed.
+
+Actual restricted export succeeds, shell/remove and /etc/shadow requests fail. Live serverAUDIT0eligible/0failures and PCLOCAL_ONLY_AUDIT0eligible. Contabo systemd sandbox NoNewPrivileges/ProtectHome/PrivateTmp independently read back/hash-verified OVH2,340,062bytes; metadata only, no content/credential transport to model. Private proof files under E:/codex-build/postiz-item79/video-cleanup.
+
+Final independent review: no BLOCKER/HIGH.29focused tests passed. Contabo source pins match exact local bytes; OVH verifier checks own/common/offsite code, private config and repository identity. Fresh + pinned recovery2,340,062-byte hash readbacks pass. Root timer enabled/persistent, nextNov16 05:10KST. systemctl start--no-block returned MainPID2234010 activating; launchSSHended, independent service later success/exit0 with0eligible/deleted/failures. WorkerPID193/container/image/restarts0 and5config hashes unchanged; source backup andOVHoffsite/integrity timers active, backup fresh.
+
+Windows task upgradedbyvalidatedsameSID+executable+workingdir only, daily05:40 +logon withbounded retries. Dedicated restrictedkeys only. Actual LOCAL_ONLY_APPLY17:52:42–45KST LastTaskResult0/no failures/no deletions. Source/installer metadata pins match; old taskXML/runner/pins and oldrootfiles retained. Physical PC shutdown was not performed; server unit independence proven by detached launch, localhost source/config/key paths and actual server-to-server proof. No existing application deployment/worker restart.

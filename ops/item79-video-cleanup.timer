@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Item79 cleanup at 05:10 Korea time
+
+[Timer]
+OnCalendar=*-*-* 05:10:00 Asia/Seoul
+Persistent=true
+AccuracySec=1min
+Unit=item79-video-cleanup.service
+
+[Install]
+WantedBy=timers.target

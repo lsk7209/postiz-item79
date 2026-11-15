@@ -164,54 +164,69 @@ replace the server's privileged code. Save the previous installed scripts under
 the scoped backup directory before updating. Timers and root-only config are
 installed directly on the verified hosts, not stored with credentials in Git.
 
-## Automatic published-video cleanup (2026-11-15)
+## Automatic published-video cleanup — PC independent (2026-11-15)
 
-`Item79-PublishedVideo-Cleanup` is a dedicated Windows Task Scheduler job, daily
-05:10 Korea time, StartWhenAvailable, network required, current-user interactive
-logon, Limited privileges, IgnoreNew concurrent instances,30minute limit. Its
-private runner/state/receipts live under `E:/codex-build/postiz-item79/video-cleanup`.
-The PC must be on and this user logged in; Contabo cleanup waits while it is off.
-This is a PC-coordinated cleanup, not an independent Contabo systemd timer.
+Contabo `item79-video-cleanup.timer` runs daily05:10Asia/Seoul, Persistent after
+server downtime. Its dedicated root oneshot coordinator is
+`/usr/local/lib/item79/item79-server-video-cleanup.py --apply`, with25minute
+timeout,512MiB coordinator limit and low CPU/I/O priority. It owns authoritative
+observations, completed deletion receipts and reports under root700
+`/var/lib/item79-video-cleanup`. No Windows path/key/session/network is needed.
+A run lock prevents overlapping coordinators; shared deployment/backup lock
+prevents snapshots/releases overlapping cleanup. Application and retained
+publishing worker/container/schema/grants are unchanged.
 
-The root-owned Contabo gate `/usr/local/lib/item79/item79-video-gate.cjs` runs in
-the active web slot without restarting the publisher or changing application
-source, schema or grants. It scopes to the three enrolled YouTube integrations,
-queries fresh exact-channel public/processed/successful videos, requires both
-provider publication and first public observation at least7days old, protects
-all organizations' Post image/settings/text references, recurring posts, auxiliary
-Comments/Messages/Plugs, processing media, shared owners and other Media uses.
-Unknown integrations and malformed references remain held. Publication flags
-alone never authorize cleanup. Missing/failed API evidence fails closed.
+The unchanged root-owned gate `item79-video-gate.cjs` is hash-pinned. Existing
+exact three YouTube integration scope and public/processed/succeeded publication
+and first-observation7day gates remain. All-organization image/settings/text,
+recurring, auxiliary, processing and shared-media references protect files.
+Unknown channels and malformed references fail closed. Media-picker tombstone
+commits before quarantine, inode/SHA recheck and final unlink. Interrupted
+quarantines restore; operation IDs and exact receipts reconcile lost responses.
+Historical Post records remain; old Postiz media previews may disappear.
 
-Before each removal the coordinator verifies a fresh offsite backup receipt,
-Restic manifest identity and an actual dump/hash of that exact upload on OVH.
-The encrypted backup/recovery repository is retained; no backup pruning occurs.
-Media-picker tombstones commit before byte movement. Provider requests happen
-outside table locks; short transactions recheck references, then quarantine and
-rehash the exact inode. Failed quarantine commits restore bytes. A durable
-operation journal reconciles interrupted moves and lost acknowledgements.
-The final unlink runs only after commit and validated independent recovery.
-Historical Post records stay intact; their old media previews can disappear.
+Before each server removal, Contabo's locally generated root600 key
+`/etc/item79-ops/video-verifier` reaches only OVH's dedicated
+`item79-cleanup-verifier` forced-command account. No personal/admin private key
+is copied between hosts. Root-owned authorized_keys uses restrict/forced command;
+password login is locked and only the no-argument recovery helper has sudo.
+The helper accepts bounded JSON for owned canonical video path/SHA/bytes,
+checks fresh backup + exact Restic manifest, dumps/hashes that exact member and
+returns metadata only. Helper/common/offsite code, private offsite configuration
+and Restic repository identity are pinned. No arbitrary shell/restic command,
+file bytes, credentials or backup pruning is exposed.
 
-Only individually enrolled final PC upload copies may be removed, matching
-postID + SHA + canonical path + explicit localAssetId/deleteEligible.58local
-finals were enrolled initially:45Postiz-mapped,13native-only protected because
-no verified Contabo/offsite binding exists. Different/unknown/active copies,
-raw footage/projects and recovery copies are outside scope. A Windows exclusive
-file handle prevents deleting a file currently open by another process. Extra
-reservations sharing the same SHA protect local copies. New local workflow
-versions/copies require running the bounded enrollment helper after receipt
-review; they are never discovered by indiscriminate filesystem cleanup.
+The Windows `Item79-PublishedVideo-Cleanup` task is now LOCAL ONLY: daily05:40KST
+and at user logon, StartWhenAvailable, networkrequired, IgnoreNew, Limited,
+30minute limit and2bounded15minute retries. It uses dedicated root-readable
+Contabo receipt-reader and OVH verifier keys under private E: task storage; no
+admin key is used by the task. Contabo reader permits only completed receipt
+export, exact operation acknowledgement and fresh local-check; it rejects remove
+and arbitrary commands. Server observations/candidates come from the server,
+not from caller input. PC-off therefore delays only PC-copy cleanup.
 
-Safe manual audit: `python ops/item79-video-cleanup.py` (no deletion).
-Install after enrollment: `powershell -File ops/install-video-cleanup.ps1`
-(registers disabled by default); activate the reviewed task deliberately.
-Reports: private `latest.json`, `runs/`, `receipts/`; no raw reports in Git.
-Ambiguous operations remain held, never blindly reissued. Confirmed server
-removals resume local-only cleanup using the original pinned recovery snapshot.
+58final PC copies enrolled:45Postiz-mapped and13native-only protected. No raw
+footage/projects, unmatched/new local files or independent backups are deleted.
+Each local operation pins its initial selected asset IDs/paths/SHA/bytes and
+rechecks exact server acknowledgement, fresh public/reference state and actual
+OVH recovery bytes before a Windows exclusive-handle removal. Current-map
+changes cannot add new retry targets. A missing path after durable local intent
+is recorded REMOVED_UNCONFIRMED with0claimed removed bytes, without repeating
+unlink or falsely attributing deletion. Missing paths without that intent are
+held. Receipts and recovery snapshots are retained indefinitely.
 
-Rollback: `Disable-ScheduledTask -TaskName Item79-PublishedVideo-Cleanup`.
-Do not delete receipts or backups. For recovery, use the operation's pinned
-Restic snapshot to dump the exact `uploads/...` member and verify SHA/bytes
-before restoring its exact path; restore media visibility separately if needed.
-Disabling cleanup does not restore already removed copies automatically.
+Inspect server: `systemctl status item79-video-cleanup.timer`; private reports
+in `/var/lib/item79-video-cleanup/latest.json`. Safe server audit:
+`sudo python3 /usr/local/lib/item79/item79-server-video-cleanup.py` without apply.
+Safe PC audit: `python ops/item79-video-cleanup.py --local-only`. PC private
+runner/pins/maps/keys/reports remain E:/codex-build/postiz-item79/video-cleanup.
+Install/upgrade PC task with `ops/install-video-cleanup.ps1 -UpgradeToLocalOnly`
+(disabled by default). New local versions/copies require bounded re-enrollment
+and deliberate pin update; never discover/delete arbitrary media trees.
+
+Rollback: disable server timer and Windows named task, retain all state/keys/
+receipts/backups. Pre-change Windows XML/runner/pins and versioned root source
+backups are preserved. Reconcile active intents before choosing a single writer.
+For recovery, dump the operation's exact pinned Restic member and verify SHA/
+bytes before restoring the upload path; restore media visibility separately.
+Do not enable the old PC server-writer concurrently with the server timer.

@@ -1,4 +1,10 @@
-# Automatic published-video cleanup — 2026-11-15
+# PC-independent published-video cleanup — 2026-11-15
+
+DONE. Contabo item79-video-cleanup.timer enabled/persistent daily05:10Asia/Seoul, nextNov16 05:10KST. Independent systemd job completed after launchSSH disconnected, Resultsuccess/exit0,0eligible/deleted/failures,70protected. PC power/login/network no longer required for server cleanup. Root source/config/keys and strict OVH forced-command backup verifier only; personal admin private keys never moved. Unchanged Node gate + exact server source pins,7day/publication/reference/actual independent recovery criteria retained.
+
+Windows Item79-PublishedVideo-Cleanup is now local-only, dedicated restricted read/verifier credentials, daily05:40KST +logon, bounded retries. Actual LOCAL_ONLY_APPLY17:52:42–45KST LastTaskResult0. Initial selected local asset set pinned per operation; server completed receipts are authoritative, no PC server-remove privilege.29focused tests and final independent review pass. WorkerPID193/restarts0/online/config hashes and all backup timers/freshness preserved. No production files eligible/deleted. See `.goal-harness/server-native-video-cleanup-20261115/verification.json` and ops/ITEM79-OPERATIONS.md. Prior PC-dependent implementation below is historical.
+
+# Historical PC-coordinated cleanup — 2026-11-15 (superseded below server-native entry)
 
 DONE. Item79-PublishedVideo-Cleanup enabled daily05:10KST, StartWhenAvailable, networkrequired/current-userInteractive. Actual Task Scheduler APPLY17:23:34–41KST completed LastTaskResult0,0eligible/0deleted/70protected/0failures; nextNov16 05:10. Coordinator runs from private E:/codex-build/postiz-item79/video-cleanup; requires PC on/user logged in/network, including Contabo cleanup. Root gate installed on confirmed Contabo, exact SHA pinned in runner; runner and58-copy enrollment pinned/ACL-protected.45Postiz-mapped PCcopies eligible only when all proofs pass;13native-only and unknown channels remain protected. No backup pruning, raw/project removal, app/worker/schema/queue deployment or account changes.
 

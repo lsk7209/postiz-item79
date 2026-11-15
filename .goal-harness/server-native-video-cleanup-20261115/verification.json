@@ -1,0 +1,85 @@
+{
+  "state": "DONE",
+  "serverTimer": {
+    "enabled": true,
+    "persistent": true,
+    "schedule": "daily05:10Asia/Seoul",
+    "nextRunKst": "2026-11-16T05:10:00+09:00",
+    "PCRequired": false
+  },
+  "serverService": {
+    "result": "success",
+    "exitStatus": 0,
+    "detachedLaunchMainPID": 2234010,
+    "completedAfterLaunchSshDisconnected": true,
+    "lastRun": {
+      "startedAt": "2026-11-15T08:52:16.356576+00:00",
+      "mode": "SERVER_APPLY",
+      "state": "COMPLETED",
+      "serverRemoved": [],
+      "failures": [],
+      "eligibleCount": 0,
+      "protectedCounts": {
+        "active_or_unknown_reference": 67,
+        "publication_or_seven_day_hold": 3
+      },
+      "completedAt": "2026-11-15T08:52:21.203234+00:00"
+    }
+  },
+  "pcTask": {
+    "enabled": true,
+    "mode": "LOCAL_ONLY",
+    "dailyKst": "05:40",
+    "atLogon": true,
+    "lastResult": 0,
+    "lastRun": {
+      "startedAt": "2026-11-15T08:52:42.508821+00:00",
+      "mode": "LOCAL_ONLY_APPLY",
+      "state": "COMPLETED",
+      "serverRemoved": [],
+      "localRemoved": [],
+      "failures": [],
+      "eligibleCount": 0,
+      "protectedCounts": {},
+      "localUnconfirmed": [],
+      "completedAt": "2026-11-15T08:52:45.767740+00:00"
+    }
+  },
+  "focusedTests": 29,
+  "unchangedGateSha256": "e76d8c50b4978df965c7245c40ae8d1cd96e0bebe6e2abffc17431d7280cdc58",
+  "installedSourceHashes": {
+    "item79-video-cleanup.py": "b3fdafd9010e6b294d0dbd50d003d2ca02240dd2a06940049e4844f140b828fa",
+    "item79-server-video-cleanup.py": "4ac8196f9819dca401123a5e2f150dac59b4b4c2d9a1c676279234ede16e03b8",
+    "item79-video-reader.py": "bcc46da6b4e9ea47d8d977689e38eb5e82d2763e6dd40b10ad0a942fab47e986",
+    "item79-video-gate.cjs": "e76d8c50b4978df965c7245c40ae8d1cd96e0bebe6e2abffc17431d7280cdc58"
+  },
+  "pcRunnerSha256": "b3fdafd9010e6b294d0dbd50d003d2ca02240dd2a06940049e4844f140b828fa",
+  "independentRecovery": {
+    "fresh": true,
+    "pinnedRetry": true,
+    "sandboxMatchesService": true,
+    "bytes": 2340062,
+    "offsiteCodeConfigRepositoryPinned": true
+  },
+  "permissions": {
+    "removeAndArbitraryShellRejected": true,
+    "arbitraryRecoveryPathRejected": true,
+    "personalAdminKeysTransferred": false
+  },
+  "locks": {
+    "runContentionBlocked": true,
+    "deploymentContentionBlocked": true,
+    "exportSharesDeploymentLock": true
+  },
+  "preservation": {
+    "workerPid": 193,
+    "workerRestarts": 0,
+    "pm2Restarts": 0,
+    "configHashesUnchanged": true,
+    "sourceBackupTimerActive": true,
+    "offsiteAndIntegrityTimersActive": true,
+    "offsiteBackupFresh": true,
+    "appRevisionUnchanged": "964047ae588949996a63559254f47d1347ebaae7"
+  },
+  "productionVideosDeleted": 0
+}

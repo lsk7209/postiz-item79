@@ -1,0 +1,18 @@
+[Unit]
+Description=Item79 verified published video cleanup (PC independent)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/item79/item79-server-video-cleanup.py --apply
+User=root
+UMask=0077
+TimeoutStartSec=25min
+Nice=10
+IOSchedulingClass=idle
+MemoryMax=512M
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+
